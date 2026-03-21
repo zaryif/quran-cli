@@ -43,6 +43,7 @@ In the name of Allah, the Most Gracious, the Most Merciful
   quran bookmark                     save positions
   quran tafsir                       tafsir for any ayah
   quran info surahs                  list all 114 surahs
+  quran cache download               pre-download data for offline reading
   quran config set key val           change a setting
   quran update                       update quran-cli to latest version
   quran --help                       full help
@@ -126,6 +127,7 @@ quran schedule               # full day — auto-detects Ramadan, shows sehri/if
 quran pray                   # today's 5 prayer times (auto-detected location)
 quran pray next              # countdown to next prayer
 quran pray setup             # set location + calculation method
+quran cache download         # cache all 114 surahs for fully offline reading
 ```
 
 ---
@@ -294,8 +296,9 @@ export ANTHROPIC_API_KEY=sk-ant-...    # for AI-generated answers
 
 ```bash
 quran remind on              # start background prayer reminder daemon
-quran remind status          # check daemon + settings
-quran remind set --goal 5ayah --at 20:00
+quran remind set --at 20:00         # set reading reminder time
+quran remind set --prayers fajr,asr # trigger only specific prayers (or 'all' / 'none')
+quran remind set --advance 15       # get text notifications 15 mins before prayer (free, no account)
 ```
 
 ### Link your phone (free, no account)

@@ -330,3 +330,28 @@ def get_random_ayah(lang: str = "en") -> dict:
 
 def list_surahs() -> list[tuple]:
     return [(r[0], r[1], r[2], r[3], r[4]) for r in SURAH_META]
+
+
+def cache_status() -> dict:
+    """Return stats about the local SQLite cache."""
+    result: dict = {"languages": {}, "total_ayahs": 0, "size_mb": 0.0}
+
+    if not DB_PATH.exists():
+        return result
+
+    result["size_mb"] = DB_PATH.stat().st_size / (1024 * 1024)
+
+    try:
+        con = _get_db()
+        # Count distinct surahs per language
+        for row in con.execute(
+            "SELECT lang, COUNT(DISTINCT surah) FROM ayahs GROUP BY lang"
+        ).fetchall():
+            result["languages"][row[0]] = row[1]
+
+        total = con.execute("SELECT COUNT(*) FROM ayahs").fetchone()
+        result["total_ayahs"] = total[0] if total else 0
+    except Exception:
+        pass
+
+    return result

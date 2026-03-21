@@ -167,6 +167,21 @@ Offline mode works without API key.
 
 ---
 
+## quran cache
+
+Download Quran translations so you can read entirely offline without relying on the AlQuran.cloud API.
+
+```bash
+quran cache                         # view what languages and surahs are cached locally
+quran cache download                # interactive prompt to select languages to cache
+quran cache download --all          # download all 13 supported languages (114 surahs each)
+quran cache clear                   # clear the local SQLite cache to free up disk space
+```
+
+> **Note:** The cache is automatically populated as you read `quran read`. This command just lets you pre-download everything all at once.
+
+---
+
 ## quran ramadan
 
 Ramadan timings, calendar, and fast tracker.
@@ -248,6 +263,10 @@ quran remind off                    # stop daemon
 quran remind status                 # show status + settings
 quran remind set --goal 5ayah       # set daily reading goal
 quran remind set --at 20:00         # set reading reminder time
+quran remind set --prayers fajr,asr # choose which prayers to be reminded about
+quran remind set --prayers all      # turn on reminders for all 5 prayers
+quran remind set --prayers none     # only get the reading goal reminder
+quran remind set --advance 15       # get phone/telegram push notifications 15 mins early
 quran remind set --adhan on         # enable adhan sound
 quran remind phone                  # link phone via ntfy.sh (QR code)
 quran remind test                   # send a test notification now

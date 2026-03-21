@@ -36,6 +36,12 @@ DEFAULTS = {
         "goal_time":    "20:00",
         "phone_topic":  "",
         "adhan_sound":  True,
+        "advance_min":  10,
+        "fajr":         True,
+        "dhuhr":        True,
+        "asr":          True,
+        "maghrib":      True,
+        "isha":         True,
     },
     "display": {
         "arabic":          True,       # show Arabic text

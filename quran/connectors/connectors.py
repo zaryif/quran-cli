@@ -35,6 +35,22 @@ class DesktopConnector(BaseConnector):
     name = "desktop"
 
     def send(self, title: str, body: str, **kwargs) -> bool:
+        import sys
+        import subprocess
+
+        # Mac Native Notification via AppleScript
+        if sys.platform == "darwin":
+            try:
+                # Escape quotes for AppleScript
+                safe_title = title.replace('"', '\\"')
+                safe_body = body.replace('"', '\\"')
+                script = f'display notification "{safe_body}" with title "{safe_title}"'
+                subprocess.run(["osascript", "-e", script], check=True)
+                return True
+            except Exception:
+                pass
+
+        # Fallback to plyer (Windows/Linux)
         try:
             from plyer import notification
             notification.notify(title=title, message=body,

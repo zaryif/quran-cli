@@ -12,7 +12,7 @@ console = Console()
 from quran.commands import (
     read, search, pray, remind, ramadan, eid, news,
     bookmark, tafsir, config as cfg_cmd, schedule, quote,
-    streak, guide, connect, namaz, lang, gui, update,
+    streak, guide, connect, namaz, lang, gui, update, cache,
 )
 app.add_typer(read.app,     name="read",     help="Read Quran by surah or ayah.")
 app.add_typer(search.app,   name="search",   help="Search across the Quran.")
@@ -30,6 +30,7 @@ app.add_typer(schedule.app, name="schedule", help="Full day Islamic schedule vie
 app.add_typer(guide.app,    name="guide",    help="AI Quran & Hadith guide (RAG).")
 app.add_typer(connect.app,  name="connect",  help="Notification channels.")
 app.add_typer(update.app,   name="update",   help="Update quran-cli to the latest version.")
+app.add_typer(cache.app,    name="cache",    help="Download Quran for offline use.")
 
 @app.command("quote")
 def quote_cmd():

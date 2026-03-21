@@ -80,12 +80,19 @@ def remind_status():
     topic    = remind.get("phone_topic", "")
     phone_s  = f"[green]linked[/green]  [dim]ntfy.sh/{topic}[/dim]" if topic else "[dim]not linked[/dim]"
 
+    active_prayers = []
+    for p in ["fajr", "dhuhr", "asr", "maghrib", "isha"]:
+        if remind.get(p, True):
+            active_prayers.append(p.capitalize())
+
     console.print(
         Panel(
             f"Daemon:    {status_s}\n"
             f"Phone:     {phone_s}\n"
             f"Goal:      [white]{remind.get('goal_ayahs', 5)} ayahs/day[/white]  "
             f"at [white]{remind.get('goal_time','20:00')}[/white]\n"
+            f"Prayers:   [white]{', '.join(active_prayers) if active_prayers else 'None'}[/white]\n"
+            f"Advance:   [white]{remind.get('advance_min', 10)} minutes prior[/white]\n"
             f"Adhan:     {'[green]on[/green]' if remind.get('adhan_sound') else '[dim]off[/dim]'}",
             title="[dim]quran remind status[/dim]",
             border_style="bright_black",
@@ -99,8 +106,10 @@ def remind_set(
     goal: Annotated[Optional[str], typer.Option("--goal", help="e.g. 5ayah or 1ruku")] = None,
     at:   Annotated[Optional[str], typer.Option("--at",   help="Time HH:MM e.g. 20:00")] = None,
     adhan:Annotated[Optional[bool],typer.Option("--adhan/--no-adhan")] = None,
+    prayers:Annotated[Optional[str],typer.Option("--prayers", help="Comma-separated list (e.g. fajr,maghrib) or 'all' or 'none'")] = None,
+    advance:Annotated[Optional[int],typer.Option("--advance", help="Minutes before prayer to notify (default 10)")] = None,
 ):
-    """Set reading goal and reminder time."""
+    """Set reading goal, reminder time, and prayer triggers."""
     from quran.config.settings import load, save
 
     cfg = load()
@@ -118,6 +127,27 @@ def remind_set(
     if adhan is not None:
         cfg["remind"]["adhan_sound"] = adhan
         changed.append(f"adhan → [bold]{'on' if adhan else 'off'}[/bold]")
+
+    if prayers is not None:
+        all_p = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
+        val = prayers.lower().strip()
+        if val == "none":
+            for p in all_p:
+                cfg["remind"][p] = False
+            changed.append(f"prayers → [bold]none[/bold]")
+        elif val == "all":
+            for p in all_p:
+                cfg["remind"][p] = True
+            changed.append(f"prayers → [bold]all[/bold]")
+        else:
+            selected = [p.strip() for p in val.split(",")]
+            for p in all_p:
+                cfg["remind"][p] = p in selected
+            changed.append(f"prayers → [bold]{', '.join([p for p in all_p if p in selected])}[/bold]")
+
+    if advance is not None:
+        cfg["remind"]["advance_min"] = advance
+        changed.append(f"advance → [bold]{advance} minutes[/bold]")
 
     if changed:
         save(cfg)
@@ -166,3 +196,15 @@ def remind_phone():
         console.print(f"  [dim](install qrcode for QR display: pip install qrcode)[/dim]")
 
     console.print(f"  3. You'll receive prayer times, sehri/iftar alerts on your phone.\n")
+@app.command("test")
+def remind_test():
+    """Send a test notification to all configured channels (Desktop, Telegram, etc)."""
+    from quran.connectors.connectors import dispatch
+    from quran.config.settings import load
+
+    cfg = load()
+    city = cfg.get("location", {}).get("city", "your city")
+    
+    console.print("[dim]Sending test notification to all enabled channels…[/dim]")
+    dispatch("🕌 quran-cli Test", f"This is a test reminder from your terminal. Location: {city}")
+    console.print("[green]✓[/green] Test notification dispatched.")
