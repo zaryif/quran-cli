@@ -63,10 +63,7 @@ def schedule_cmd(
     now   = datetime.now()
     times = _build_rows(pt, now, ram)
 
-    # Next prayer highlight
-    next_name, _ = pt.next_prayer(now)
-
-    _render_schedule(times, next_name, now)
+    _render_schedule(times, now)
 
     # Fast duration
     if ram:
@@ -113,18 +110,37 @@ def _build_rows(pt, now: datetime, ram: bool) -> list[dict]:
     return rows
 
 
-def _render_schedule(rows: list[dict], next_name: str, now: datetime) -> None:
+def _render_schedule(rows: list[dict], now: datetime) -> None:
     from quran.ui.renderer import render_schedule_table
+    from datetime import timedelta
 
+    sorted_rows = sorted(rows, key=lambda x: x["dt"])
+    
+    # Identify the chronologically next event today
+    next_event = None
+    for r in sorted_rows:
+        if r["dt"] > now:
+            next_event = r
+            break
+            
     prev_dt = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    for r in sorted(rows, key=lambda x: x["dt"]):
-        if r["dt"] < now:
-            prev_dt = r["dt"]
+    
+    # If all events today have passed, the next event is tomorrow's very first event
+    if not next_event:
+        next_event = sorted_rows[0]
+        target_dt = next_event["dt"] + timedelta(days=1)
+        prev_dt = sorted_rows[-1]["dt"]  # Last event of today (usually Isha or Tarawih)
+    else:
+        target_dt = next_event["dt"]
+        for r in reversed(sorted_rows):
+            if r["dt"] <= now:
+                prev_dt = r["dt"]
+                break
 
     for r in rows:
-        if r["name"] == next_name:
+        if r["name"] == next_event["name"]:
             r["status"] = "next"
-            total = (r["dt"] - prev_dt).total_seconds()
+            total = (target_dt - prev_dt).total_seconds()
             elapsed = (now - prev_dt).total_seconds()
             if total > 0:
                 r["pct"] = min(100, max(0, int((elapsed / total) * 100)))
