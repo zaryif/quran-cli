@@ -12,6 +12,23 @@
 - Uses `zoneinfo` from stdlib (added in 3.9) — timezone-aware prayer times
 - Uses `match` statements (added in 3.10)
 
+## Terminal & Font Recommendations
+
+To ensure the Arabic text, progress bars, and dashboard UI render perfectly, you must use a terminal that supports **True Color (24-bit)** and a good **monospaced developer font** (like *JetBrains Mono*, *Fira Code*, *Cascadia Code*, or *MesloLGS Nerd Font*).
+
+### 🍎 macOS
+* **[iTerm2](https://iterm2.com/) (Highly Recommended):** The gold standard for Mac developers. It handles the right-to-left Arabic rendering beautifully and supports rich colors natively.
+* **[Ghostty](https://ghostty.org/) / [Alacritty](https://alacritty.org/):** GPU-accelerated terminals. Blazing fast, minimalistic, and renders the ASCII splash screen instantly.
+* **Native Terminal:** Works flawlessly, though colors may appear slightly more muted than iTerm2.
+
+### 🪟 Windows
+* **[Windows Terminal](https://apps.microsoft.com/detail/9n0dx20hk701) (Highly Recommended):** The absolute best option for Windows. It natively supports Unicode, right-to-left languages (Arabic), and 24-bit color. Install it from the Microsoft Store.
+* **[WezTerm](https://wezfurlong.org/wezterm/):** An incredibly powerful, cross-platform terminal emulator that perfectly parses complex CLI layouts.
+
+### 🐧 Linux
+* **[GNOME Terminal](https://help.gnome.org/users/gnome-terminal/stable/) / [Konsole](https://konsole.kde.org/):** Excellent default choices that handle True Color and Unicode natively.
+* **[Kitty](https://sw.kovidgoyal.net/kitty/):** A highly customizable, GPU-accelerated terminal that renders the `rich` tables and borders phenomenally well.
+
 ---
 
 ## Core Dependencies
