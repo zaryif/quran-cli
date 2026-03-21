@@ -27,15 +27,13 @@ app.add_typer(bookmark.app, name="bookmark", help="Save and navigate reading pos
 app.add_typer(tafsir.app,   name="tafsir",   help="Tafsir for any ayah.")
 app.add_typer(cfg_cmd.app,  name="config",   help="Configure quran-cli settings.")
 app.add_typer(schedule.app, name="schedule", help="Full day Islamic schedule view.")
-app.add_typer(quote.app,    name="quote",    help="Show a random ayah quote.")
-app.add_typer(streak.app,   name="streak",   help="Show reading and fasting streak.")
 app.add_typer(guide.app,    name="guide",    help="AI Quran & Hadith guide (RAG).")
 app.add_typer(connect.app,  name="connect",  help="Notification channels.")
 app.add_typer(update.app,   name="update",   help="Update quran-cli to the latest version.")
 
 @app.command("quote")
 def quote_cmd():
-    """Show the daily ayah."""
+    """Show a random ayah quote."""
     quote.show_quote()
 
 @app.command("streak")
