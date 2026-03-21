@@ -169,15 +169,16 @@ def print_banner() -> None:
     if info_line:
         c.print(Align.center(Text(info_line, style="dim white")))
 
-    # ── 6. Daily Ayah ─────────────────────────────────────────────────────────
+    # ── 6. Random Ayah ─────────────────────────────────────────────────────────
     try:
-        from quran.core.quran_engine import get_daily_ayah, get_surah_meta
-        daily = get_daily_ayah(lang)
+        from quran.core.quran_engine import get_random_ayah, get_surah_meta
+        daily = get_random_ayah(lang)
         if daily and daily.get("text"):
             c.print()
             text = daily["text"]
-            if len(text) > 80:
-                text = text[:77] + "…"
+            max_len = c.width - 20 if c.width > 60 else c.width - 4
+            if len(text) > max_len:
+                text = text[:max_len-3] + "…"
             meta = daily.get("meta") or {}
             ref = f"{meta.get('name', '')} {daily['surah']}:{daily['ayah']}"
             c.print(Align.center(Text(f'"{text}"', style="italic dim white")))

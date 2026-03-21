@@ -313,18 +313,18 @@ def search_quran(query: str, lang: str = "en", limit: int = 20) -> list[dict]:
     return results
 
 
-def get_daily_ayah(lang: str = "en") -> dict:
+def get_random_ayah(lang: str = "en") -> dict:
     """
-    Today's ayah — deterministic daily rotation of 30 significant ayahs.
+    Returns a random significant ayah.
     All text fetched live from AlQuran.cloud.
     """
-    from datetime import date
+    import random
     SIGNIFICANT = [
         (1,1),(2,255),(2,286),(2,152),(13,28),(94,5),(93,5),(65,3),(39,53),(2,177),
         (3,200),(17,23),(29,45),(33,41),(67,2),(20,14),(49,13),(55,13),(9,51),(14,7),
         (22,37),(23,1),(6,162),(3,159),(4,36),(2,183),(2,185),(97,1),(2,187),(3,103),
     ]
-    s, a = SIGNIFICANT[date.today().toordinal() % len(SIGNIFICANT)]
+    s, a = random.choice(SIGNIFICANT)
     return fetch_ayah_with_arabic(s, a, lang)
 
 

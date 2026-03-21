@@ -38,7 +38,7 @@ In the name of Allah, the Most Gracious, the Most Merciful
   quran lang                         change display language
   quran connect                      notification channels
   quran guide "how to make wudu"     AI-powered guide via Gemini
-  quran quote                        daily ayah quote
+  quran quote                        random ayah quote
   quran streak                       your reading activity
   quran bookmark                     save positions
   quran tafsir                       tafsir for any ayah

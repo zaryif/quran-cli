@@ -8,24 +8,24 @@ console = Console()
 
 def show_quote() -> None:
     from quran.config.settings import load
-    from quran.core.quran_engine import get_daily_ayah, get_surah_meta
+    from quran.core.quran_engine import get_random_ayah, get_surah_meta
 
     cfg  = load()
     lang = cfg.get("lang", "en")
-    ayah = get_daily_ayah(lang)
+    ayah = get_random_ayah(lang)
 
     if not ayah:
-        console.print("[dim]Could not load daily ayah. Check your connection.[/dim]")
+        console.print("  [red]✗[/red] Failed to fetch random ayah. Check your connection.")
         return
 
-    meta = ayah.get("meta") or {}
-    ref  = f"{meta.get('name','?')}  {ayah['surah']}:{ayah['ayah']}"
+    meta = get_surah_meta(ayah["surah"])
+    ref  = f"{meta['name']} {ayah['surah']}:{ayah['ayah']}"
 
     console.print()
     console.print(
         Panel(
             f"[white]{ayah['text']}[/white]\n\n[dim green]{ref}[/dim green]",
-            title="[dim]daily ayah[/dim]",
+            title="[dim]random ayah[/dim]",
             border_style="green",
             padding=(1, 3),
         )
