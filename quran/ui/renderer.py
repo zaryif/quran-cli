@@ -98,6 +98,17 @@ def print_banner() -> None:
     cols = shutil.get_terminal_size().columns
     c.print()
 
+    # ── 0. ASCII Art Banner ───────────────────────────────────────────────────
+    # A sleek, hacker-chic QURAN-CLI banner.
+    ASCII_BANNER = r"""
+  ____  _   _ ____      _    _   _        ____ _     ___ 
+ / __ \| | | |  _ \    / \  | \ | |      / ___| |   |_ _|
+| |  | | | | | |_) |  / _ \ |  \| |____ | |   | |    | | 
+| |__| | |_| |  _ <  / ___ \| |\  |____|| |___| |___ | | 
+ \___\_\\___/|_| \_\/_/   \_\_| \_|      \____|_____|___|
+"""
+    c.print(Align.center(Text(ASCII_BANNER, style="bold cyan", justify="left")))
+
     # ── 1. Arabic Basmallah ───────────────────────────────────────────────────
     if show_ar:
         ar_shaped = _shape(BASMALLAH)
