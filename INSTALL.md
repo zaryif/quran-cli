@@ -18,6 +18,14 @@
 pip install quran-cli
 ```
 
+> **macOS users:** Use `pip3` instead of `pip` and `python3` instead of `python`.
+> macOS ships with Python 2 as `python` — the `pip`/`python` commands may point to
+> the wrong version or not exist at all.
+>
+> ```bash
+> pip3 install quran-cli
+> ```
+
 Then run:
 
 ```bash
@@ -33,7 +41,8 @@ You'll see the splash screen and be ready to go.
 ```bash
 git clone https://github.com/zaryif/quran-cli.git
 cd quran-cli
-pip install -e .
+pip install -e .          # Linux / Windows
+# pip3 install -e .       # macOS
 quran
 ```
 
@@ -84,7 +93,7 @@ quran config set lang ar     # Arabic
 ### AI Guide (Quran + Hadith answers)
 
 ```bash
-pip install "quran-cli[ai]"
+pip install "quran-cli[ai]"            # pip3 on macOS
 export ANTHROPIC_API_KEY=sk-ant-...    # get at console.anthropic.com
 quran guide "what does the Quran say about patience"
 ```
@@ -92,7 +101,7 @@ quran guide "what does the Quran say about patience"
 ### Telegram / WhatsApp Notifications
 
 ```bash
-pip install "quran-cli[connectors]"
+pip install "quran-cli[connectors]"    # pip3 on macOS
 quran connect telegram      # follow setup wizard
 quran connect whatsapp      # follow setup wizard
 ```
@@ -100,7 +109,7 @@ quran connect whatsapp      # follow setup wizard
 ### Everything
 
 ```bash
-pip install "quran-cli[all]"
+pip install "quran-cli[all]"           # pip3 on macOS
 ```
 
 ---
@@ -146,7 +155,7 @@ alias qr='quran ramadan'
 ## Uninstall
 
 ```bash
-pip uninstall quran-cli
+pip uninstall quran-cli         # pip3 on macOS
 rm -rf ~/.config/quran-cli     # remove settings
 rm -rf ~/.local/share/quran-cli  # remove cached data
 ```
@@ -160,6 +169,9 @@ rm -rf ~/.local/share/quran-cli  # remove cached data
 # Make sure pip's bin directory is in PATH
 export PATH="$HOME/.local/bin:$PATH"
 # Add this line to ~/.bashrc or ~/.zshrc
+
+# macOS: if installed with pip3, the binary may be at:
+export PATH="$(python3 -m site --user-base)/bin:$PATH"
 ```
 
 **Arabic text renders incorrectly**
@@ -185,6 +197,7 @@ quran connect desktop   # verify plyer is working
 **`No module named 'httpx'`**
 ```bash
 pip install httpx       # or: pip install quran-cli --upgrade
+# macOS: pip3 install httpx
 ```
 
 ---

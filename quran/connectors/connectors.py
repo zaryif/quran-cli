@@ -266,7 +266,7 @@ class WebhookConnector(BaseConnector):
                 "type": kwargs.get("notification_type", "prayer"),
                 "title": title,
                 "body": body,
-                "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "source": "quran-cli",
             }
             payload.update({k: v for k, v in kwargs.items()

@@ -124,7 +124,7 @@ def print_banner() -> None:
     c.print(Align.center(Text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", style="bright_black")))
     c.print()
     c.print(Align.center(Text("quran-cli", style="bold green")))
-    c.print(Align.center(Text("v1.0.0  ·  Islamic terminal companion", style="dim")))
+    c.print(Align.center(Text("v1.0.1  ·  Islamic terminal companion", style="dim")))
 
     if ram:
         c.print()

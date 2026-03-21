@@ -126,7 +126,7 @@ def pray_setup():
 def _show_times():
     pt, loc, cfg = _get_times()
     from quran.ui.renderer import render_prayer_table, print_location_header
-    from quran.core.ramadan import is_ramadan, is_ramadan as _ir
+    from quran.core.ramadan import is_ramadan
     from quran.core.prayer_times import sehri_time, iftar_time
 
     ram = is_ramadan()

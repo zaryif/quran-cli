@@ -99,7 +99,7 @@ def monthly_timetable(lat: float, lon: float, hijri_year: int,
     for i in range(30):
         d = start + timedelta(days=i)
         pt = get_prayer_times(lat, lon, for_date=d, method=method, asr_method=asr_method,
-        tz=loc.get("tz", ""))
+        tz=tz)
         rows.append({
             "day":     i + 1,
             "date":    d,

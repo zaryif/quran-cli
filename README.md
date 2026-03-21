@@ -24,7 +24,7 @@
 بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
 In the name of Allah, the Most Gracious, the Most Merciful
 
-  quran-cli   v1.0.0  ·  Islamic terminal companion
+  quran-cli   v1.0.1  ·  Islamic terminal companion
 
   quran schedule                     full day view — prayers, sehri, iftar
   quran read 1                       read Al-Fatihah
@@ -79,6 +79,9 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 # Install from PyPI
 pip install quran-cli
 
+# macOS: use pip3 and python3 (macOS ships with Python 2 as default)
+pip3 install quran-cli
+
 # Verify
 quran --version
 ```
@@ -97,7 +100,7 @@ curl -fsSL https://raw.githubusercontent.com/zaryif/quran-cli/main/install.sh | 
 # From source
 git clone https://github.com/zaryif/quran-cli.git
 cd quran-cli
-pip install -e .
+pip install -e .          # pip3 install -e . on macOS
 ```
 
 ### Optional extras
@@ -106,6 +109,7 @@ pip install -e .
 pip install "quran-cli[ai]"          # AI guide (requires ANTHROPIC_API_KEY)
 pip install "quran-cli[connectors]"  # Telegram + WhatsApp
 pip install "quran-cli[all]"         # Everything
+# macOS: replace pip → pip3 in all commands above
 ```
 
 ---
@@ -430,7 +434,7 @@ quran-cli/
 git clone https://github.com/zaryif/quran-cli.git
 cd quran-cli
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev]"    # inside venv, pip works on all platforms
 pytest tests/ -v
 ```
 
