@@ -28,6 +28,7 @@ console = Console()
 def connect_cmd(ctx: typer.Context):
     if ctx.invoked_subcommand is None:
         list_connectors()
+        _interactive_picker()
 
 
 @app.command("list")
@@ -69,60 +70,73 @@ def list_connectors():
     console.print()
     console.print(table)
     console.print()
+    console.print("  [dim]Setup: [green]quran connect <channel>[/green]")
+    console.print("  [dim]Test:  [green]quran connect test <channel>[/green][/dim]\n")
 
-    # Interactive channel picker
+
+def _interactive_picker():
+    """Arrow-key channel picker — only shown on bare 'quran connect'."""
+    from quran.connectors import ALL_CONNECTORS, load_connectors
+
     try:
         from simple_term_menu import TerminalMenu
-
-        channel_names = list(ALL_CONNECTORS.keys())
-        labels = []
-        for name in channel_names:
-            ccfg = cfg.get(name, {})
-            enabled = ccfg.get("enabled", name == "desktop")
-            configured = ALL_CONNECTORS[name].is_configured(ccfg) or name == "desktop"
-            if enabled and configured:
-                status = "● active"
-            elif enabled and not configured:
-                status = "○ not set up"
-            else:
-                status = "○ disabled"
-            labels.append(f"{name:12s}  {status:14s}  {notes.get(name, '')}")
-
-        console.print("  [dim]↑↓ to navigate · Enter to set up · q to cancel[/dim]\n")
-
-        menu = TerminalMenu(
-            labels,
-            title="  Select a channel to set up:",
-            menu_cursor_style=("fg_green", "bold"),
-            menu_highlight_style=("fg_green", "bold"),
-        )
-        idx = menu.show()
-
-        if idx is not None:
-            selected = channel_names[idx]
-            console.print(f"\n  [dim]→ Setting up [bold]{selected}[/bold]…[/dim]\n")
-            # Dispatch to the correct setup command
-            setup_map = {
-                "desktop":  None,  # always active
-                "ntfy":     setup_ntfy,
-                "telegram": setup_telegram,
-                "whatsapp": setup_whatsapp,
-                "gmail":    setup_gmail,
-                "webhook":  None,  # needs URL argument
-            }
-            setup_fn = setup_map.get(selected)
-            if setup_fn:
-                setup_fn()
-            elif selected == "desktop":
-                console.print("  [green]✓[/green] Desktop notifications are always active.")
-            elif selected == "webhook":
-                console.print("  [dim]Webhook needs a URL: [green]quran connect webhook <url>[/green][/dim]")
-        else:
-            console.print("  [dim]Cancelled.[/dim]")
-
     except ImportError:
-        console.print("  [dim]Setup: [green]quran connect <channel>[/green]")
-        console.print("  [dim]Test:  [green]quran connect test <channel>[/green][/dim]\n")
+        return
+
+    cfg = load_connectors()
+    notes = {
+        "desktop":  "OS-native popups",
+        "ntfy":     "Free phone push",
+        "telegram": "Telegram bot",
+        "whatsapp": "WhatsApp (Twilio)",
+        "gmail":    "Gmail digest",
+        "webhook":  "Discord/Slack/custom",
+    }
+
+    channel_names = list(ALL_CONNECTORS.keys())
+    labels = []
+    for name in channel_names:
+        ccfg = cfg.get(name, {})
+        enabled = ccfg.get("enabled", name == "desktop")
+        configured = ALL_CONNECTORS[name].is_configured(ccfg) or name == "desktop"
+        if enabled and configured:
+            status = "● active"
+        elif enabled and not configured:
+            status = "○ not set up"
+        else:
+            status = "○ disabled"
+        labels.append(f"{name:12s}  {status:14s}  {notes.get(name, '')}")
+
+    console.print("  [dim]↑↓ to navigate · Enter to set up · q to cancel[/dim]\n")
+
+    menu = TerminalMenu(
+        labels,
+        title="  Select a channel to set up:",
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
+    )
+    idx = menu.show()
+
+    if idx is not None:
+        selected = channel_names[idx]
+        console.print(f"\n  [dim]→ Setting up [bold]{selected}[/bold]…[/dim]\n")
+        setup_map = {
+            "desktop":  None,
+            "ntfy":     setup_ntfy,
+            "telegram": setup_telegram,
+            "whatsapp": setup_whatsapp,
+            "gmail":    setup_gmail,
+            "webhook":  None,
+        }
+        setup_fn = setup_map.get(selected)
+        if setup_fn:
+            setup_fn()
+        elif selected == "desktop":
+            console.print("  [green]✓[/green] Desktop notifications are always active.")
+        elif selected == "webhook":
+            console.print("  [dim]Webhook needs a URL: [green]quran connect webhook <url>[/green][/dim]")
+    else:
+        console.print("  [dim]Cancelled.[/dim]")
 
 
 @app.command("telegram")

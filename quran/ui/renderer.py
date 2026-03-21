@@ -71,20 +71,23 @@ def _shape(text: str) -> str:
 
 def print_banner() -> None:
     """
-    Professional quran-cli splash screen.
+    Ultra-minimalist quran-cli splash screen.
 
     Displays:
-      1. Arabic Basmallah (correctly shaped, bold yellow)
-      2. English translation
-      3. Secondary language translation (default: Bangla)
-      4. App name + version
-      5. Quick-start command hints
+      1. Arabic Basmallah
+      2. English & Secondary translations
+      3. Current Date (Gregorian & Hijri)
+      4. Location and Next Prayer countdown
+      5. Minimalist command menu
     """
+    import shutil
+    from datetime import datetime
     from quran.config.settings import load
-    from quran.core.ramadan import is_ramadan
+    from quran.core.location import detect_location
+    from quran.core.prayer_times import get_prayer_times
+    from quran.core.ramadan import gregorian_to_hijri, is_ramadan
 
     cfg  = load()
-    ram  = is_ramadan()
     lang = cfg.get("lang", "en")
     lang2 = cfg.get("lang2", "bn")
     show_en    = cfg.get("display", {}).get("show_en", True)
@@ -92,82 +95,104 @@ def print_banner() -> None:
     show_ar    = cfg.get("display", {}).get("arabic", True)
 
     c = console
+    cols = shutil.get_terminal_size().columns
     c.print()
 
-    # ── 1. Arabic Basmallah ────────────────────────────────────────────────────
+    # ── 1. Arabic Basmallah ───────────────────────────────────────────────────
     if show_ar:
         ar_shaped = _shape(BASMALLAH)
         c.print(Align.center(
-            Text(ar_shaped, style="bold yellow", justify="center")
+            Text(ar_shaped, style="bold white", justify="center")
         ))
         c.print()
 
-    # ── 2. English translation ─────────────────────────────────────────────────
+    # ── 2. English translation ────────────────────────────────────────────────
     if show_en:
-        en_text = BASMALLAH_TRANSLATIONS["en"]
-        c.print(Align.center(
-            Text(en_text, style="white", justify="center")
-        ))
+        en_lines = _wrap_centered(BASMALLAH_TRANSLATIONS["en"], cols - 4)
+        for line in en_lines:
+            c.print(Align.center(Text(line, style="white")))
 
-    # ── 3. Secondary language translation (Bangla by default) ─────────────────
+    # ── 3. Secondary translation ──────────────────────────────────────────────
     if show_lang2 and lang2 and lang2 != "en":
         lang2_text = BASMALLAH_TRANSLATIONS.get(lang2, "")
         if lang2_text and lang2_text != BASMALLAH_TRANSLATIONS.get("en", ""):
-            if lang2 == "ar":
-                lang2_text = _shape(lang2_text)
-            c.print(Align.center(
-                Text(lang2_text, style="dim cyan", justify="center")
-            ))
+            if lang2 == "ar": lang2_text = _shape(lang2_text)
+            lang2_lines = _wrap_centered(lang2_text, cols - 4)
+            for line in lang2_lines:
+                c.print(Align.center(Text(line, style="dim white")))
 
-    # ── 4. App name ────────────────────────────────────────────────────────────
-    c.print()
-    c.print(Align.center(Text("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", style="bright_black")))
-    c.print()
-    c.print(Align.center(Text("quran-cli", style="bold green")))
-    c.print(Align.center(Text("v1.0.2  ·  Islamic terminal companion", style="dim")))
-
-    if ram:
-        c.print()
-        c.print(Align.center(Text("☽  Ramadan Mubarak — رَمَضَان مُبَارَك", style="bold yellow")))
-
-    # ── 5. Language note ───────────────────────────────────────────────────────
-    primary_name   = LANG_NAMES.get(lang, lang)
-    secondary_name = LANG_NAMES.get(lang2, lang2) if lang2 else "—"
-    c.print()
-    c.print(Align.center(
-        Text(
-            f"Primary: {primary_name}  ·  Secondary: {secondary_name}  "
-            f"·  quran lang — change",
-            style="dim"
-        )
-    ))
     c.print()
 
-    # ── 6. Quick-start panel ───────────────────────────────────────────────────
-    commands = [
-        ("quran schedule",           "full day — prayers, sehri, iftar"),
-        ("quran read 1",             "read Al-Fatihah"),
-        ("quran read kahf",          "search surah by name"),
-        ("quran read 2:255 --dual",  "Ayat ul-Kursi with Arabic"),
-        ("quran pray",               "today's prayer times"),
-        ("quran ramadan",            "sehri, iftar & tarawih"),
-        ("quran lang",               "change display language"),
-        ("quran guide \"...\"",      "Quran & Hadith AI guide"),
-        ("quran --help",             "all commands"),
+    # ── 4. Dates & Live Info ──────────────────────────────────────────────────
+    today = datetime.now()
+    hy, hm, hd = gregorian_to_hijri(today.date())
+    hijri_months = [
+        "Muharram", "Safar", "Rabi Al-Awwal", "Rabi Al-Thani", "Jumada Al-Awwal",
+        "Jumada Al-Thani", "Rajab", "Sha'aban", "Ramadan", "Shawwal",
+        "Dhul-Qi'dah", "Dhul-Hijjah"
     ]
+    hm_name = hijri_months[hm - 1] if 1 <= hm <= 12 else str(hm)
+    
+    date_str = f"{today.strftime('%d %B %Y')}  ·  {hd} {hm_name} {hy} AH"
+    c.print(Align.center(Text(date_str, style="bold white")))
 
-    rows = "\n".join(
-        f"  [green]{cmd:<38}[/green][dim]{desc}[/dim]"
-        for cmd, desc in commands
-    )
+    c.print(Align.center(Text("v1.0.3  ·  Islamic terminal companion", style="dim white")))
+    if is_ramadan():
+        c.print(Align.center(Text("Ramadan Mubarak", style="bold white")))
 
-    c.print(Panel(
-        rows,
-        title="[dim]quick start[/dim]",
-        border_style="bright_black",
-        padding=(0, 1),
-    ))
+    # ── 5. Location & Prayer Countdown ────────────────────────────────────────
+    loc = detect_location()
+    city = loc.get("city", "Unknown")
+    country = loc.get("country", "")
+    location_str = f"{city}, {country}".strip(", ")
+    
+    next_prayer_str = ""
+    try:
+        lat, lon = float(loc.get("lat", 0)), float(loc.get("lon", 0))
+        if lat and lon:
+            method = cfg.get("method", "ISNA")
+            asr_method = cfg.get("asr_method", "Standard")
+            pt = get_prayer_times(lat, lon, for_date=today.date(), method=method, asr_method=asr_method)
+            next_name, next_dt = pt.next_prayer(today)
+            if next_name and next_dt:
+                diff = next_dt - today
+                hours, remainder = divmod(diff.seconds, 3600)
+                minutes = remainder // 60
+                time_until = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
+                # If time is 0h 0m it means it's now
+                if hours == 0 and minutes == 0: time_until = "now"
+                next_prayer_str = f"Next: {next_name} in {time_until} ({next_dt.strftime('%H:%M')})"
+    except Exception:
+        pass
+
+    info_parts = filter(bool, [location_str, next_prayer_str])
+    info_line = "  ·  ".join(info_parts)
+    if info_line:
+        c.print(Align.center(Text(info_line, style="dim white")))
+
     c.print()
+
+    # ── 6. Minimalist Menu ────────────────────────────────────────────────────
+    cmds = ["read", "search", "pray", "namaz", "schedule", "lang", "guide", "help"]
+    c.print(Align.center(Text("  ·  ".join(cmds), style="dim white")))
+    c.print()
+
+
+def _wrap_centered(text: str, max_width: int) -> list[str]:
+    """Split text into lines that fit within max_width characters."""
+    if len(text) <= max_width:
+        return [text]
+    words = text.split()
+    lines, current = [], ""
+    for word in words:
+        test = f"{current} {word}".strip()
+        if len(test) <= max_width:
+            current = test
+        else:
+            if current: lines.append(current)
+            current = word
+    if current: lines.append(current)
+    return lines or [text]
 
 
 def print_location_header(loc: dict, is_ramadan: bool = False) -> None:

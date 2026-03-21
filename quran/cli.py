@@ -74,9 +74,16 @@ def info_cmd(
     else:
         console.print("\n  [dim]quran info surahs · surah 36 · methods · languages · hijri · location[/dim]\n")
 
+@app.command("gui")
+def gui_cmd():
+    """Interactive terminal dashboard."""
+    from quran.commands.gui import show_gui
+    show_gui()
+
+
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
-    """[bold green]quran-cli[/bold green] — run [green]quran schedule[/green] or [green]quran --help[/green]"""
+    """[bold green]quran-cli[/bold green] — run [green]quran gui[/green], [green]quran schedule[/green] or [green]quran --help[/green]"""
     if ctx.invoked_subcommand is None:
-        from quran.ui.renderer import print_banner
-        print_banner()
+        from quran.commands.gui import show_gui
+        show_gui()
