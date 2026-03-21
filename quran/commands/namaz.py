@@ -173,7 +173,7 @@ def namaz_cmd(
 
 def _interactive_picker():
     console.print()
-    console.print(Rule("[dim]Salah Guide[/dim]", style="green"))
+    console.print(Rule("[dim]Prayer Details (Rakat)[/dim]", style="green"))
     console.print()
 
     keys = list(PRAYERS.keys())
