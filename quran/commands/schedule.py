@@ -66,7 +66,7 @@ def schedule_cmd(
     # Next prayer highlight
     next_name, _ = pt.next_prayer(now)
 
-    _render_schedule(times, next_name)
+    _render_schedule(times, next_name, now)
 
     # Fast duration
     if ram:
@@ -113,12 +113,25 @@ def _build_rows(pt, now: datetime, ram: bool) -> list[dict]:
     return rows
 
 
-def _render_schedule(rows: list[dict], next_name: str) -> None:
+def _render_schedule(rows: list[dict], next_name: str, now: datetime) -> None:
     from quran.ui.renderer import render_schedule_table
+
+    prev_dt = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    for r in sorted(rows, key=lambda x: x["dt"]):
+        if r["dt"] < now:
+            prev_dt = r["dt"]
 
     for r in rows:
         if r["name"] == next_name:
             r["status"] = "next"
+            total = (r["dt"] - prev_dt).total_seconds()
+            elapsed = (now - prev_dt).total_seconds()
+            if total > 0:
+                r["pct"] = min(100, max(0, int((elapsed / total) * 100)))
+            else:
+                r["pct"] = 0
+            break
+            
     render_schedule_table(rows)
 
 
