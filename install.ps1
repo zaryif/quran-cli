@@ -6,23 +6,30 @@ $LogFile = "quran_install_error.log"
 Write-Host "🕌 Installing quran-cli..." -ForegroundColor Cyan
 
 try {
+    # Ensure python is available
+    if (!(Get-Command python -ErrorAction SilentlyContinue)) {
+        if (!(Get-Command py -ErrorAction SilentlyContinue)) {
+            Write-Host "[ERROR] Python is not installed or not in PATH. Please install Python 3.10+ from python.org" -ForegroundColor Red
+            exit 1
+        }
+    }
+
     Write-Host "-> Fetching latest version from GitHub via pip..."
     python -m pip install git+https://github.com/zaryif/quran-cli.git 2>&1 | Out-File -FilePath $LogFile -Append
 
-    # Auto-fix PATH issue for current user
-    $ScriptsPath = "$env:APPDATA\Python\Python311\Scripts" # Target default python311 scripts, wildcard fallback below works better but this covers base
+    # Dynamically ask Python exactly where its Scripts folder (where pip puts EXEs) is located
+    $TargetScriptsPath = python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+
+    if (-not $TargetScriptsPath) {
+        throw "Could not determine Python Scripts path."
+    }
+
     $UserPathItem = [System.Environment]::GetEnvironmentVariable("Path", "User")
     
-    # Try finding actual Python Scripts path dynamically
-    $PythonExe = (Get-Command python).Source
-    $PythonDir = Split-Path $PythonExe
-    $DynamicScriptsPath = Join-Path $PythonDir "Scripts"
-
-    $TargetScriptsPath = if (Test-Path $DynamicScriptsPath) { $DynamicScriptsPath } else { $ScriptsPath }
-
+    # Check if the Scripts path is already in the User Path
     if ($UserPathItem -notmatch [regex]::Escape($TargetScriptsPath)) {
         Write-Host "-> Fixing PATH variable by adding $TargetScriptsPath..." -ForegroundColor Yellow
-        $NewPath = $UserPathItem + ";$TargetScriptsPath"
+        $NewPath = $UserPathItem + ($UserPathItem.EndsWith(';') ? "" : ";") + $TargetScriptsPath
         [System.Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
         Write-Host "⚠️ IMPORTANT: Please completely close and REOPEN PowerShell before typing 'quran'." -ForegroundColor Red
     } else {
