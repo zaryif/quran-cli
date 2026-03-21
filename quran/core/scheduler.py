@@ -158,11 +158,22 @@ def _schedule_today(cfg: dict) -> None:
                 logging.info("Scheduled %s at %s", job_id, dt.strftime("%H:%M"))
 
         # ── 5 daily prayer notifications ─────────────────────────────────────
-        _add("fajr",    pt.fajr,    _job_prayer, ["Fajr",    city, topic])
-        _add("dhuhr",   pt.dhuhr,   _job_prayer, ["Dhuhr",   city, topic])
-        _add("asr",     pt.asr,     _job_prayer, ["Asr",     city, topic])
-        _add("maghrib", pt.maghrib, _job_prayer, ["Maghrib", city, topic])
-        _add("isha",    pt.isha,    _job_prayer, ["Isha",    city, topic])
+        advance_m = cfg.get("remind", {}).get("advance_min", 10)
+        
+        for p_id, p_time, p_name in [
+            ("fajr", pt.fajr, "Fajr"),
+            ("dhuhr", pt.dhuhr, "Dhuhr"),
+            ("asr", pt.asr, "Asr"),
+            ("maghrib", pt.maghrib, "Maghrib"),
+            ("isha", pt.isha, "Isha")
+        ]:
+            # 1. Actual prayer time
+            _add(p_id, p_time, _job_prayer, [p_name, city, topic])
+            
+            # 2. Advance reminder (if configured)
+            if advance_m > 0:
+                _add(f"{p_id}_warn", p_time - timedelta(minutes=advance_m),
+                     _job_prayer, [f"{p_name} (in {advance_m}m)", city, topic])
 
         # ── Ramadan-specific notifications ───────────────────────────────────
         if ramadan:

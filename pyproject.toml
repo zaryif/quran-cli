@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "quran-cli"
-version = "1.2.0"
+version = "1.2.1"
 description = "A clean, minimal Islamic companion for the terminal"
 readme = "README.md"
 requires-python = ">=3.11"

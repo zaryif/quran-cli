@@ -17,6 +17,8 @@ Usage:
   quran read 36 --lang bn           # Bangla
   quran read 18 --dual              # Arabic + primary translation
   quran read 18 --dual2             # primary lang + secondary lang (lang2)
+  quran read 18 --dual --lang ur    # Arabic + Urdu (on the fly)
+  quran read 18 --dual2 --lang en --lang2 bn # English + Bangla (on the fly)
   quran read --arabic-only 1        # Arabic text only
 """
 from __future__ import annotations
@@ -53,6 +55,8 @@ def read_cmd(
         help="Surah number, name, or ayah ref: '1', 'kahf', '2:255', '18:1-10'")] = None,
     lang:         Annotated[str,  typer.Option("--lang","-l",
         help="Language code: en, bn, ar, ur, tr, fr, id, ru, de, es, zh, nl, ms")] = "",
+    lang2_opt:    Annotated[str,  typer.Option("--lang2", "--second",
+        help="Secondary language code for dual2 mode")] = "",
     dual:         Annotated[bool, typer.Option("--dual","-d",
         help="Arabic + primary translation side by side")] = False,
     dual2:        Annotated[bool, typer.Option("--dual2",
@@ -87,7 +91,11 @@ def read_cmd(
 
     cfg   = load()
     lang  = lang or cfg.get("lang", "en")
-    lang2 = cfg.get("lang2", "bn")
+    lang2 = lang2_opt or cfg.get("lang2", "bn")
+
+    # Auto-enable dual2 if lang2_opt was provided
+    if lang2_opt and not dual:
+        dual2 = True
 
     # Validate language
     if lang not in LANG_EDITIONS:

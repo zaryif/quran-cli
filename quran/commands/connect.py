@@ -7,6 +7,7 @@ Usage:
   quran connect whatsapp
   quran connect gmail
   quran connect webhook https://...
+  quran connect verify
   quran connect test telegram
   quran connect off telegram
   quran connect on  telegram
@@ -241,6 +242,39 @@ def test_connector(
         console.print(f"[green]✓[/green] Test sent to [bold]{channel}[/bold].")
     else:
         console.print(f"[red]✗[/red] Failed. Run [green]quran connect {channel}[/green] to reconfigure.")
+
+
+@app.command("verify")
+def verify_connectors():
+    """Test all enabled notification channels at once."""
+    from quran.connectors import ALL_CONNECTORS, load_connectors
+    from rich.live import Live
+    
+    cfg = load_connectors()
+    
+    table = Table(box=box.SIMPLE_HEAD, show_header=True, header_style="dim",
+                  border_style="bright_black", padding=(0, 2))
+    table.add_column("Channel", width=12)
+    table.add_column("Result",  width=20)
+    
+    console.print()
+    console.print(Rule("[dim]Verifying all enabled channels…[/dim]", style="green"))
+    console.print()
+    
+    with Live(table, console=console, refresh_per_second=4):
+        for name, connector in ALL_CONNECTORS.items():
+            ccfg = cfg.get(name, {})
+            enabled = ccfg.get("enabled", name == "desktop")
+            configured = connector.is_configured(ccfg) or name == "desktop"
+            
+            if not enabled or not configured:
+                continue
+                
+            ok = connector.test()
+            res = "[bold green]✓ Success[/bold green]" if ok else "[bold red]✗ Failed[/bold red]"
+            table.add_row(name, res)
+
+    console.print()
 
 
 @app.command("off")
