@@ -440,6 +440,15 @@ quran-cli/
 
 ---
 
+## Troubleshooting
+
+If you install `quran-cli` but your terminal says `quran: command not found`, it means Python's local script directory is not in your system's PATH. 
+
+For full step-by-step instructions on fixing this (for macOS, Linux, and Windows) or other common errors, please see our dedicated guide:
+👉 **[Error Log & Troubleshooting](error-log.md)**
+
+---
+
 ## Development
 
 ```bash
