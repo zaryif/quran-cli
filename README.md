@@ -85,33 +85,25 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 
 ## Installation
 
-**Requirements: Python 3.11+**
+Requires **Python 3.9+**.
+
+### **⭐ Recommended Installation (Stable v1.1.7)**
+To get the most stable, trusted version of the CLI without experimental UI changes, run this exact command:
 
 ```bash
-# Install from PyPI
-pip install quran-cli
+python3 -m pip install git+https://github.com/zaryif/quran-cli.git@v1.1.7
+```
 
-# macOS: use pip3 and python3 (macOS ships with Python 2 as default)
-pip3 install quran-cli
-
+```bash
 # Verify
 quran --version
-```
-
-```bash
-# Homebrew (macOS/Linux)
-brew install zaryif/tap/quran-cli
-```
-
-```bash
-# One-line installer
-curl -fsSL https://raw.githubusercontent.com/zaryif/quran-cli/main/install.sh | bash
 ```
 
 ```bash
 # From source
 git clone https://github.com/zaryif/quran-cli.git
 cd quran-cli
+git checkout v1.1.7
 pip install -e .          # pip3 install -e . on macOS
 ```
 
