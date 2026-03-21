@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Distribution
+dist/
+build/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# quran-cli runtime data (user-specific, not committed)
+~/.local/share/quran-cli/
+~/.config/quran-cli/
+
+# Logs
+*.log
+daemon.log
+
+# Environment variables
+.env
+.env.local
+
+# OS
+Thumbs.db

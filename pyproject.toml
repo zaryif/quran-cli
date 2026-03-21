@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quran-cli"
+version = "1.0.0"
+description = "A clean, minimal Islamic companion for the terminal"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["quran", "islam", "prayer", "ramadan", "cli"]
+authors = [{ name = "Zarif Azfar", email = "contact@mdzarifazfar.me" }]
+
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "httpx>=0.27.0",
+    "apscheduler>=3.10.0",
+    "plyer>=2.1.0",
+    "arabic-reshaper>=3.0.0",
+    "python-bidi>=0.4.2",
+    "qrcode>=7.4.2",
+    "feedparser>=6.0.11",
+    "rank-bm25>=0.2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio"]
+ai  = ["anthropic>=0.28.0"]
+connectors = [
+    "python-telegram-bot>=21.0",
+    "twilio>=9.0",
+]
+all = [
+    "anthropic>=0.28.0",
+    "python-telegram-bot>=21.0",
+    "twilio>=9.0",
+    "sentence-transformers>=3.0",
+]
+
+[project.scripts]
+quran = "quran.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/zaryif/quran-cli"
+Documentation = "https://github.com/zaryif/quran-cli/tree/main/docs"
+Issues = "https://github.com/zaryif/quran-cli/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["quran"]
