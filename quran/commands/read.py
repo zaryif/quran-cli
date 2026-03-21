@@ -28,7 +28,7 @@ from rich.console import Console
 from rich.rule import Rule
 from rich.text import Text
 from rich.align import Align
-from typing import Optional
+from typing import Optional, List, Dict
 from typing_extensions import Annotated
 
 app     = typer.Typer(help="Read Quran by surah or ayah reference.")
@@ -70,17 +70,8 @@ def read_cmd(
         return
 
     if ref is None:
-        console.print()
-        console.print("  [dim]Usage: quran read [bold]<surah>[/bold][/dim]")
-        console.print()
-        console.print("  [dim]By number:    [/dim][green]quran read 1[/green]")
-        console.print("  [dim]By name:      [/dim][green]quran read kahf[/green]")
-        console.print("  [dim]Single ayah:  [/dim][green]quran read 2:255[/green]")
-        console.print("  [dim]Range:        [/dim][green]quran read 2:1-10[/green]")
-        console.print("  [dim]Bangla:       [/dim][green]quran read 18 --lang bn[/green]")
-        console.print("  [dim]Dual (ar+tr): [/dim][green]quran read 36 --dual[/green]")
-        console.print("  [dim]Two langs:    [/dim][green]quran read 36 --dual2[/green]")
-        console.print()
+        # Trigger interactive mode
+        _interactive_read()
         return
 
     from quran.config.settings import load
@@ -280,3 +271,156 @@ def _render_ayah(ayah: dict, surah_n: int,
         console.print(f"  {ref_s}  {ayah['text']}")
 
     console.print()
+
+def _interactive_read():
+    """Interactive navigation for reading the Quran."""
+    try:
+        from simple_term_menu import TerminalMenu
+    except ImportError:
+        console.print("[red]Error:[/red] [bold]simple-term-menu[/bold] is required for interactive mode.")
+        console.print("       Install it with: [green]pip install simple-term-menu[/green]")
+        return
+
+    from quran.core.quran_engine import SURAH_META, LANG_EDITIONS
+    from quran.config.settings import load
+    from quran.commands.lang import LANGUAGES
+
+    cfg = load()
+
+    # 1. Main Action Menu
+    actions = [
+        "📖 Read Quran with Translation",
+        "🖇  Dual Mode (Arabic + Primary)",
+        "🖇  Dual Translation (Two Languages)",
+        "🔍 Search Quran",
+        "🚪 Exit"
+    ]
+    
+    console.print()
+    console.print(Rule("[bold green]Quran Navigator[/bold green]", style="green"))
+    console.print()
+
+    menu = TerminalMenu(
+        actions,
+        title="  Select an action:",
+        menu_cursor_style=("fg_green", "bold"),
+        menu_highlight_style=("fg_green", "bold"),
+    )
+    idx = menu.show()
+
+    if idx is None or idx == 4:
+        console.print("  [dim]Cancelled.[/dim]\n")
+        return
+
+    # 2. Surah Selection
+    surah_labels = [f"{s[0]:3d}. {s[1]:20s} [dim]({s[2]})[/dim]" for s in SURAH_META]
+    surah_menu = TerminalMenu(
+        surah_labels,
+        title="  Select a Surah:",
+        show_search_hint=True,
+        menu_cursor_style=("fg_green", "bold"),
+    )
+    s_idx = surah_menu.show()
+    if s_idx is None: return
+    surah_n = SURAH_META[s_idx][0]
+
+    # 3. Language Selection Helper
+    def pick_lang(title: str):
+        lang_items = list(LANG_EDITIONS.keys())
+        lang_labels = []
+        for code in lang_items:
+            name = LANGUAGES.get(code, {}).get("native", code)
+            lang_labels.append(f"{code:4s}  [dim]{name}[/dim]")
+        
+        l_menu = TerminalMenu(lang_labels, title=f"  {title}:", menu_cursor_style=("fg_green", "bold"))
+        l_idx = l_menu.show()
+        return lang_items[l_idx] if l_idx is not None else None
+
+    # 4. Handle Actions
+    if idx == 0:  # Single Translation
+        l1 = pick_lang("Select Translation Language")
+        if not l1: return
+        _run_read_logic(surah_n, lang=l1)
+        
+    elif idx == 1: # Dual Mode (Arabic + L1)
+        l1 = pick_lang("Select Translation Language")
+        if not l1: return
+        _run_read_logic(surah_n, lang=l1, dual=True)
+
+    elif idx == 2: # Dual Translation (L1 + L2)
+        l1 = pick_lang("Select First Language")
+        if not l1: return
+        l2 = pick_lang("Select Second Language")
+        if not l2: return
+        _run_read_logic(surah_n, lang=l1, lang2_opt=l2, dual2=True)
+        
+    elif idx == 3: # Search
+        from quran.commands.search import search_cmd
+        query = typer.prompt("  Enter search query")
+        search_cmd(query)
+
+
+def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "", 
+                   dual: bool = False, dual2: bool = False, 
+                   arabic_only: bool = False, no_arabic: bool = False):
+    """Internal logic extracted from read_cmd."""
+    from quran.config.settings import load
+    from quran.core.quran_engine import (
+        get_surah_meta, fetch_surah, fetch_surah_dual,
+        fetch_ayah_with_arabic, LANG_EDITIONS,
+    )
+    
+    cfg   = load()
+    lang  = lang or cfg.get("lang", "en")
+    lang2 = lang2_opt or cfg.get("lang2", "bn")
+
+    if lang2_opt and not dual:
+        dual2 = True
+
+    meta = get_surah_meta(surah_n)
+    if not meta: return
+
+    _render_surah_header(meta)
+    
+    show_arabic = not no_arabic
+    use_dual    = dual or arabic_only
+    
+    from_a = 1
+    to_a   = None
+
+    if dual2:
+        with console.status(f"[dim]Fetching {meta['name']} ({lang} + {lang2})…[/dim]"):
+            ayahs_p = fetch_surah(surah_n, lang, from_a, to_a)
+            ayahs_s = fetch_surah(surah_n, lang2, from_a, to_a)
+        if not ayahs_p:
+            _fetch_error(meta["name"], surah_n, lang)
+            return
+        s_map = {a["ayah"]: a["text"] for a in ayahs_s}
+        for a in ayahs_p:
+            ref_s = f"[dim green]{surah_n}:{a['ayah']}[/dim green]"
+            t2    = s_map.get(a["ayah"], "")
+            console.print(f"  {ref_s}  [white]{a['text']}[/white]")
+            if t2: console.print(f"        [dim]{t2}[/dim]")
+            console.print()
+        return
+
+    if use_dual:
+        with console.status(f"[dim]Fetching {meta['name']} (ar + {lang})…[/dim]"):
+            ayahs = fetch_surah_dual(surah_n, lang, from_a, to_a)
+        if not ayahs:
+            _fetch_error(meta["name"], surah_n, lang)
+            return
+        for ayah in ayahs:
+            _render_ayah(ayah, surah_n, show_arabic=show_arabic,
+                         lang_label=lang, arabic_only=arabic_only)
+        return
+
+    with console.status(f"[dim]Fetching {meta['name']} ({lang})…[/dim]"):
+        ayahs = fetch_surah(surah_n, lang, from_a, to_a)
+    if not ayahs:
+        _fetch_error(meta["name"], surah_n, lang)
+        return
+    for ayah in ayahs:
+        ref_s = f"[dim green]{surah_n}:{ayah['ayah']}[/dim green]"
+        console.print(f"  {ref_s}  {ayah['text']}")
+        console.print()

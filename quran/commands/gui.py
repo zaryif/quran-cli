@@ -71,6 +71,7 @@ def _main_menu_loop(TerminalMenu):
     while True:
         options = [
             "  Read Quran",
+            "  Read Quran with Translation",
             "  Search",
             "  Daily Prayer Schedule",
             "  Ramadan Guide",
@@ -105,6 +106,7 @@ def _main_menu_loop(TerminalMenu):
 
         actions = [
             lambda: _read_submenu(TerminalMenu),
+            lambda: _read_with_translation_flow(TerminalMenu),
             lambda: _search_prompt(),
             lambda: _run("quran schedule"),
             lambda: _run("quran ramadan"),
@@ -308,6 +310,90 @@ def _run(cmd: str):
     """Execute a CLI command."""
     console.print(f"\n  [dim]→ {cmd}[/dim]\n")
     try:
-        subprocess.run(cmd, shell=True)
+        # Use PYTHONPATH=. to ensure local code is used if running via this dashboard
+        import os
+        env = os.environ.copy()
+        if "PYTHONPATH" not in env:
+            env["PYTHONPATH"] = "."
+        else:
+            env["PYTHONPATH"] = f".:{env['PYTHONPATH']}"
+            
+        subprocess.run(cmd, shell=True, env=env)
     except Exception as e:
         console.print(f"  [red]Error: {e}[/red]")
+
+
+def _read_with_translation_flow(TerminalMenu):
+    """Flow for 'Read Quran with Translation': Select L1 -> Select L2 -> Select Surah -> Read."""
+    from quran.core.quran_engine import LANG_EDITIONS, SURAH_META
+    from quran.commands.lang import LANGUAGES
+
+    # 1. Select Language 1
+    lang_items = ["ar"] + list(LANG_EDITIONS.keys())
+    if "ar" in lang_items and lang_items.count("ar") > 1:
+        lang_items.remove("ar") # avoid duplicates if ar was already in LANG_EDITIONS
+
+    lang_labels = []
+    for code in lang_items:
+        name = LANGUAGES.get(code, {}).get("native", "Arabic" if code == "ar" else code)
+        lang_labels.append(f"{code:4s}  [dim]{name}[/dim]")
+    
+    l1_menu = TerminalMenu(
+        lang_labels, 
+        title="  Select First Language (Left):",
+        menu_cursor="> ",
+        menu_cursor_style=("fg_cyan", "bold"),
+        menu_highlight_style=("fg_cyan", "bold"),
+    )
+    l1_idx = l1_menu.show()
+    if l1_idx is None: return
+    l1 = lang_items[l1_idx]
+
+    # 2. Select Language 2
+    l2_menu = TerminalMenu(
+        lang_labels, 
+        title=f"  Select Second Language (Right) [L1: {l1}]:",
+        menu_cursor="> ",
+        menu_cursor_style=("fg_cyan", "bold"),
+        menu_highlight_style=("fg_cyan", "bold"),
+    )
+    l2_idx = l2_menu.show()
+    if l2_idx is None: return
+    l2 = lang_items[l2_idx]
+
+    # 3. Select Surah
+    surah_labels = []
+    for s in SURAH_META:
+        num, name, meaning, ayahs, typ = s
+        surah_labels.append(f"{num:>3}.  {name:<18s}  [dim]{meaning}[/dim]")
+
+    s_menu = TerminalMenu(
+        surah_labels,
+        title=f"  Select Surah ({l1} + {l2}):",
+        show_search_hint=True,
+        menu_cursor="> ",
+        menu_cursor_style=("fg_cyan", "bold"),
+    )
+    s_idx = s_menu.show()
+    if s_idx is None: return
+    surah_num = SURAH_META[s_idx][0]
+
+    # 4. Command Dispatch Logic
+    if l1 == l2:
+        cmd = f"quran read {surah_num} --lang {l1}"
+    elif l1 == "ar":
+        cmd = f"quran read {surah_num} --dual --lang {l2}"
+    elif l2 == "ar":
+        cmd = f"quran read {surah_num} --dual --lang {l1}"
+    else:
+        # Both are translations
+        cmd = f"quran read {surah_num} --dual2 --lang {l1} --lang2 {l2}"
+
+    _run(cmd)
+    
+    # Wait for user to read before returning to menu
+    console.print("\n  [dim]Press Enter to return to menu…[/dim]", end="")
+    try:
+        input()
+    except (KeyboardInterrupt, EOFError):
+        pass
