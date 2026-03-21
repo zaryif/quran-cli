@@ -121,7 +121,7 @@ LANGUAGES = {
 }
 
 
-@app.callback(invoke_without_command=True)
+@app.callback(invoke_without_command=True, context_settings={"allow_interspersed_args": True})
 def lang_cmd(
     ctx:    typer.Context,
     code:   Annotated[Optional[str], typer.Argument(

@@ -16,7 +16,7 @@ app     = typer.Typer(help="Search across the Quran.")
 console = Console()
 
 
-@app.callback(invoke_without_command=True)
+@app.callback(invoke_without_command=True, context_settings={"allow_interspersed_args": True})
 def search_cmd(
     ctx:   typer.Context,
     query: Annotated[str,  typer.Argument(help="Word or phrase to search")],

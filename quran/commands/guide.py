@@ -22,7 +22,7 @@ app     = typer.Typer(help="AI-powered Quran & Hadith guide.")
 console = Console()
 
 
-@app.callback(invoke_without_command=True)
+@app.callback(invoke_without_command=True, context_settings={"allow_interspersed_args": True})
 def guide_cmd(
     ctx:         typer.Context,
     query:       Annotated[Optional[str], typer.Argument(help="Your question")] = None,

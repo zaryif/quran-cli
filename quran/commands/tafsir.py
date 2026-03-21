@@ -16,7 +16,7 @@ app     = typer.Typer(help="Tafsir (commentary) for any ayah.")
 console = Console()
 
 
-@app.callback(invoke_without_command=True)
+@app.callback(invoke_without_command=True, context_settings={"allow_interspersed_args": True})
 def tafsir_cmd(
     ctx: typer.Context,
     ref: Annotated[Optional[str], typer.Argument(help="Ayah ref e.g. 2:255")] = None,

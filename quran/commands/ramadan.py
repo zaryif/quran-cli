@@ -33,7 +33,7 @@ def _get_deps():
     return cfg, loc
 
 
-@app.callback(invoke_without_command=True)
+@app.callback(invoke_without_command=True, context_settings={"allow_interspersed_args": True})
 def ramadan_cmd(
     ctx:    typer.Context,
     week:   Annotated[bool, typer.Option("--week",   help="Show 7-day table")] = False,

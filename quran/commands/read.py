@@ -38,7 +38,7 @@ def _parse_ref(ref: str) -> tuple[int | str, Optional[int], Optional[int]]:
     return (int(ref) if ref.isdigit() else ref), None, None
 
 
-@app.callback(invoke_without_command=True)
+@app.callback(invoke_without_command=True, context_settings={"allow_interspersed_args": True})
 def read_cmd(
     ctx:          typer.Context,
     ref:          Annotated[Optional[str], typer.Argument(
