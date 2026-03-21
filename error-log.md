@@ -6,9 +6,24 @@ This document outlines common errors you might encounter when installing or runn
 
 ## 1. Error: `quran: command not found`
 
-**Cause:** You installed `quran-cli` using `pip`, but the folder where Python installs command-line tools is not in your system's `PATH`.
+**Cause:** You installed `quran-cli` manually using `pip`, but the folder where Python installs tools is not in your system's `PATH`.
 
-### Solution for macOS & Linux (zsh / bash)
+### Best Solution (Automated)
+Instead of manually typing PATH variables, just run our **1-click automated installer** which detects your operating system and automatically fixes your PATH for you. If it encounters any errors, it will create a highly detailed `quran_install_error.log` file in the folder!
+
+**macOS & Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/zaryif/quran-cli/main/install.sh | bash
+```
+
+**Windows PowerShell:**
+```powershell
+irm https://raw.githubusercontent.com/zaryif/quran-cli/main/install.ps1 | iex
+```
+
+---
+
+### Manual Solution for macOS & Linux (zsh / bash)
 You need to add Python's local bin directory to your PATH.
 
 1. Open your terminal.

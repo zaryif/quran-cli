@@ -104,12 +104,15 @@ brew install zaryif/tap/quran-cli
 ```
 
 ```bash
-# One-line installer
+# macOS/Linux (One-line installer)
 curl -fsSL https://raw.githubusercontent.com/zaryif/quran-cli/main/install.sh | bash
+
+# Windows PowerShell (One-line installer)
+irm https://raw.githubusercontent.com/zaryif/quran-cli/main/install.ps1 | iex
 ```
 
 ```bash
-# From source
+# From source (Manual)
 git clone https://github.com/zaryif/quran-cli.git
 cd quran-cli
 pip install -e .          # pip3 install -e . on macOS
