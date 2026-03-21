@@ -85,7 +85,7 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 
 ## Installation
 
-**Requirements: Python 3.11+**
+**Requirements:** Python 3.11+, `git`, and `curl` (already installed on most systems).
 
 ```bash
 # Install from PyPI
@@ -447,7 +447,18 @@ quran-cli/
 
 If you install `quran-cli` but your terminal says `quran: command not found`, it means Python's local script directory is not in your system's PATH. 
 
-For full step-by-step instructions on fixing this (for macOS, Linux, and Windows) or other common errors, please see our dedicated guide:
+The easiest way to fix this is to run our automated installer which configures your PATH for you.
+
+**Windows PowerShell:**
+```powershell
+irm https://raw.githubusercontent.com/zaryif/quran-cli/main/install.ps1 | iex
+```
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/zaryif/quran-cli/main/install.sh | bash
+```
+
+For full step-by-step manual fixes or other common errors, see:
 👉 **[Error Log & Troubleshooting](error-log.md)**
 
 ---
