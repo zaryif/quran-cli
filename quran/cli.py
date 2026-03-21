@@ -12,7 +12,7 @@ console = Console()
 from quran.commands import (
     read, search, pray, remind, ramadan, eid, news,
     bookmark, tafsir, config as cfg_cmd, schedule, quote,
-    streak, guide, connect, namaz,
+    streak, guide, connect, namaz, lang,
 )
 app.add_typer(read.app,     name="read",     help="Read Quran by surah or ayah.")
 app.add_typer(search.app,   name="search",   help="Search across the Quran.")
@@ -21,6 +21,7 @@ app.add_typer(remind.app,   name="remind",   help="Prayer & reading reminders.")
 app.add_typer(ramadan.app,  name="ramadan",  help="Ramadan timings — sehri, iftar, tarawih.")
 app.add_typer(eid.app,      name="eid",      help="Eid salah guide & details.")
 app.add_typer(namaz.app,    name="namaz",    help="How to perform each prayer.")
+app.add_typer(lang.app,     name="lang",     help="Set display language and translations.")
 app.add_typer(news.app,     name="news",     help="Muslim world news headlines.")
 app.add_typer(bookmark.app, name="bookmark", help="Save and navigate reading positions.")
 app.add_typer(tafsir.app,   name="tafsir",   help="Tafsir for any ayah.")

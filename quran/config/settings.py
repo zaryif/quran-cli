@@ -8,22 +8,20 @@ from pathlib import Path
 if sys.version_info >= (3, 11):
     import tomllib
 else:
-    import tomli as tomllib
-
-try:
-    import tomllib as _tl
-    _has_tomllib = True
-except ImportError:
-    _has_tomllib = False
+    try:
+        import tomli as tomllib
+    except ImportError:
+        import tomllib
 
 CONFIG_DIR  = Path.home() / ".config" / "quran-cli"
 CONFIG_FILE = CONFIG_DIR / "config.toml"
 DATA_DIR    = Path.home() / ".local" / "share" / "quran-cli"
 
 DEFAULTS = {
-    "lang":         "en",
-    "method":       "Karachi",        # prayer calculation method
-    "asr_method":   "Standard",       # Standard | Hanafi
+    "lang":         "en",         # primary translation language
+    "lang2":        "bn",         # secondary language shown on splash + --dual2
+    "method":       "Karachi",
+    "asr_method":   "Standard",
     "location": {
         "city":    "Dhaka",
         "country": "BD",
@@ -40,10 +38,12 @@ DEFAULTS = {
         "adhan_sound":  True,
     },
     "display": {
-        "arabic":        True,
+        "arabic":          True,       # show Arabic text
+        "show_en":         True,       # show English on splash
+        "show_lang2":      True,       # show secondary language on splash
         "transliteration": False,
-        "dual":          False,
-        "theme":         "dark",
+        "dual":            False,
+        "theme":           "dark",
     },
     "ramadan": {
         "notify_sehri_min": 15,
@@ -80,7 +80,6 @@ def save(cfg: dict) -> None:
 
 
 def _dict_to_toml(d: dict, prefix: str = "") -> list[str]:
-    """Minimal TOML serialiser (no external dep)."""
     lines = []
     scalars = {k: v for k, v in d.items() if not isinstance(v, dict)}
     tables  = {k: v for k, v in d.items() if isinstance(v, dict)}
@@ -99,7 +98,6 @@ def _dict_to_toml(d: dict, prefix: str = "") -> list[str]:
 
 
 def get(key: str, default=None):
-    """Dot-notation getter: get('location.city')"""
     cfg = load()
     parts = key.split(".")
     val = cfg
@@ -112,19 +110,17 @@ def get(key: str, default=None):
 
 
 def set_key(key: str, value) -> None:
-    """Dot-notation setter: set_key('display.dual', True)"""
     cfg = load()
     parts = key.split(".")
     d = cfg
     for p in parts[:-1]:
         d = d.setdefault(p, {})
-    # coerce type
     try:
-        if value.lower() in ("true", "yes"):
+        if str(value).lower() in ("true", "yes"):
             value = True
-        elif value.lower() in ("false", "no"):
+        elif str(value).lower() in ("false", "no"):
             value = False
-        elif "." in value:
+        elif "." in str(value):
             value = float(value)
         else:
             value = int(value)
