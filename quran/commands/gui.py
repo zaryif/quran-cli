@@ -28,7 +28,7 @@ COMMANDS_REF = [
     ("quran pray",                 "Prayer times for your location"),
     ("quran schedule",             "Full day schedule"),
     ("quran ramadan",              "Sehri, Iftar & Tarawih times"),
-    ("quran namaz",                "Prayer performance guide"),
+    ("quran namaz",                "Prayer details & rakat breakdown"),
     ("quran lang",                 "Change display language"),
     ("quran connect",              "Notification channels"),
     ("quran guide \"...\"",        "AI Quran & Hadith guide"),

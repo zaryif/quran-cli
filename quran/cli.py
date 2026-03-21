@@ -20,7 +20,7 @@ app.add_typer(pray.app,     name="pray",     help="Prayer times for your locatio
 app.add_typer(remind.app,   name="remind",   help="Prayer & reading reminders.")
 app.add_typer(ramadan.app,  name="ramadan",  help="Ramadan timings — sehri, iftar, tarawih.")
 app.add_typer(eid.app,      name="eid",      help="Eid salah guide & details.")
-app.add_typer(namaz.app,    name="namaz",    help="How to perform each prayer.")
+app.add_typer(namaz.app,    name="namaz",    help="Prayer details & rakat breakdown.")
 app.add_typer(lang.app,     name="lang",     help="Set display language and translations.")
 app.add_typer(news.app,     name="news",     help="Muslim world news headlines.")
 app.add_typer(bookmark.app, name="bookmark", help="Save and navigate reading positions.")

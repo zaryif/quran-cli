@@ -34,7 +34,7 @@ In the name of Allah, the Most Gracious, the Most Merciful
   quran search "patience"            search across the Quran
   quran pray                         prayer times for your location
   quran ramadan                      sehri, iftar & tarawih times
-  quran namaz                        prayer performance guide
+  quran namaz                        prayer details & rakat breakdown
   quran lang                         change display language
   quran connect                      notification channels
   quran guide "how to make wudu"     AI-powered guide via Gemini

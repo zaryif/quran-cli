@@ -217,7 +217,7 @@ quran eid --countdown               # days until next Eid
 Deep guide for performing each prayer.
 
 ```bash
-quran namaz                         # interactive prayer picker
+quran namaz                         # interactive prayer details picker
 quran namaz fajr                    # Fajr — rakah breakdown + description
 quran namaz dhuhr
 quran namaz asr
