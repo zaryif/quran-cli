@@ -136,7 +136,7 @@ def print_banner() -> None:
     date_str = f"{today.strftime('%d %B %Y')}  ·  {hd} {hm_name} {hy} AH"
     c.print(Align.center(Text(date_str, style="bold white")))
 
-    c.print(Align.center(Text("v1.0.3  ·  Islamic terminal companion", style="dim white")))
+    c.print(Align.center(Text("quran-cli v1.0.4", style="dim white")))
     if is_ramadan():
         c.print(Align.center(Text("Ramadan Mubarak", style="bold white")))
 
@@ -159,7 +159,6 @@ def print_banner() -> None:
                 hours, remainder = divmod(diff.seconds, 3600)
                 minutes = remainder // 60
                 time_until = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
-                # If time is 0h 0m it means it's now
                 if hours == 0 and minutes == 0: time_until = "now"
                 next_prayer_str = f"Next: {next_name} in {time_until} ({next_dt.strftime('%H:%M')})"
     except Exception:
@@ -170,11 +169,22 @@ def print_banner() -> None:
     if info_line:
         c.print(Align.center(Text(info_line, style="dim white")))
 
-    c.print()
+    # ── 6. Daily Ayah ─────────────────────────────────────────────────────────
+    try:
+        from quran.core.quran_engine import get_daily_ayah, get_surah_meta
+        daily = get_daily_ayah(lang)
+        if daily and daily.get("text"):
+            c.print()
+            text = daily["text"]
+            if len(text) > 80:
+                text = text[:77] + "…"
+            meta = daily.get("meta") or {}
+            ref = f"{meta.get('name', '')} {daily['surah']}:{daily['ayah']}"
+            c.print(Align.center(Text(f'"{text}"', style="italic dim white")))
+            c.print(Align.center(Text(f"-- {ref}", style="dim")))
+    except Exception:
+        pass
 
-    # ── 6. Minimalist Menu ────────────────────────────────────────────────────
-    cmds = ["read", "search", "pray", "namaz", "schedule", "lang", "guide", "help"]
-    c.print(Align.center(Text("  ·  ".join(cmds), style="dim white")))
     c.print()
 
 
