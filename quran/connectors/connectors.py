@@ -126,7 +126,7 @@ class TelegramConnector(BaseConnector):
         c.print("  1. Open Telegram and search [@BotFather](https://t.me/BotFather)")
         c.print("  2. Send /newbot and follow instructions to get a [bold]Bot Token[/bold]")
         c.print("  3. Start a chat with your new bot")
-        c.print("  4. Open https://api.telegram.org/bot<TOKEN>/getUpdates to get your Chat ID")
+        c.print("  4. Send a message to @userinfobot or @getMyIDBot to get your Chat ID")
         c.print()
         c.print("[dim]Bot token:[/dim] ", end="")
         token = input().strip()
