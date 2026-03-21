@@ -79,6 +79,7 @@ def _main_menu_loop(TerminalMenu):
             "  Notification Channels",
             "  AI Guide",
             "  All Commands",
+            "  Run Command",
             "  Update quran-cli",
             "  Exit",
         ]
@@ -112,6 +113,7 @@ def _main_menu_loop(TerminalMenu):
             lambda: _run("quran connect"),
             lambda: _run("quran guide"),
             lambda: _show_commands_ref(),
+            lambda: _run_any_command(),
             lambda: _run("quran update"),
         ]
 
@@ -130,6 +132,19 @@ def _search_prompt():
         return
     if query:
         _run(f'quran search "{query}"')
+
+
+def _run_any_command():
+    """Prompt user for any raw quran command."""
+    console.print()
+    console.print("  [dim]Enter any quran command (e.g. read 18, quote, search light):[/dim]")
+    console.print("  > quran ", end="")
+    try:
+        cmd = input().strip()
+    except (KeyboardInterrupt, EOFError):
+        return
+    if cmd:
+        _run(f"quran {cmd}")
 
 
 def _read_submenu(TerminalMenu):
