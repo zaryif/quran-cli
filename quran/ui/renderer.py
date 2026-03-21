@@ -136,7 +136,7 @@ def print_banner() -> None:
     date_str = f"{today.strftime('%d %B %Y')}  ·  {hd} {hm_name} {hy} AH"
     c.print(Align.center(Text(date_str, style="bold white")))
 
-    c.print(Align.center(Text("quran-cli v1.0.4", style="dim white")))
+    c.print(Align.center(Text("quran-cli v1.0.5", style="dim white")))
     if is_ramadan():
         c.print(Align.center(Text("Ramadan Mubarak", style="bold white")))
 
@@ -238,16 +238,7 @@ def render_prayer_table(
         padding=(0, 2), border_style="bright_black",
     )
     table.add_column("Prayer", style="dim",   width=12)
-    table.add_column("Time",   style="white", width=12)
-    table.add_column("",                      width=16)
-
-    ARABIC_NAMES = {
-        "Fajr": "فَجْر",     "Sunrise": "شُرُوق",
-        "Dhuhr": "ظُهْر",    "Asr": "عَصْر",
-        "Maghrib": "مَغْرِب", "Isha": "عِشَاء",
-        "Sehri": "سُحُور",   "Iftar": "إِفْطَار",
-        "Tarawih": "تَرَاوِيح",
-    }
+    table.add_column("Time",   style="white", width=25)
 
     order = []
     if extras and "Sehri" in extras:
@@ -269,25 +260,22 @@ def render_prayer_table(
         if not isinstance(dt, _dt.datetime):
             continue
         time_str = dt.strftime("%I:%M %p")
-        ar       = _shape(ARABIC_NAMES.get(name, ""))
         is_next  = name == next_name
 
         if is_next:
             table.add_row(
                 f"[bold green]{name}[/bold green]",
-                f"[bold green]{time_str}[/bold green]",
-                f"[green]▶ next[/green]  [dim]{ar}[/dim]",
+                f"[bold green]{time_str}[/bold green]  [green]▶ next[/green]",
             )
         elif is_special:
             table.add_row(
                 f"[yellow]{name}[/yellow]",
                 f"[yellow]{time_str}[/yellow]",
-                f"[dim yellow]{ar}[/dim yellow]",
             )
         elif name == "Sunrise":
-            table.add_row(f"[dim]{name}[/dim]", f"[dim]{time_str}[/dim]", f"[dim]{ar}[/dim]")
+            table.add_row(f"[dim]{name}[/dim]", f"[dim]{time_str}[/dim]")
         else:
-            table.add_row(name, time_str, f"[dim]{ar}[/dim]")
+            table.add_row(name, time_str)
 
     console.print(table)
 

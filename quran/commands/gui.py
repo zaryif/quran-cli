@@ -72,7 +72,7 @@ def _main_menu_loop(TerminalMenu):
         options = [
             "📖  Read Quran",
             "🔍  Search",
-            "🕌  Daily Schedule",
+            "🕌  Daily Prayer Schedule",
             "🧭  Prayer Times",
             "🌙  Ramadan Guide",
             "🧎  Namaz Guide",
@@ -104,7 +104,7 @@ def _main_menu_loop(TerminalMenu):
 
         actions = [
             lambda: _read_submenu(TerminalMenu),
-            lambda: _run("quran search"),
+            lambda: _search_prompt(),
             lambda: _run("quran schedule"),
             lambda: _run("quran pray"),
             lambda: _run("quran ramadan"),
@@ -117,6 +117,19 @@ def _main_menu_loop(TerminalMenu):
 
         actions[idx]()
         console.print()
+
+
+def _search_prompt():
+    """Prompt user for a search keyword."""
+    console.print()
+    console.print("  [dim]Enter a search keyword (e.g. patience, light, sabr):[/dim]")
+    console.print("  > ", end="")
+    try:
+        query = input().strip()
+    except (KeyboardInterrupt, EOFError):
+        return
+    if query:
+        _run(f'quran search "{query}"')
 
 
 def _read_submenu(TerminalMenu):

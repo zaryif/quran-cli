@@ -24,7 +24,7 @@
 بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
 In the name of Allah, the Most Gracious, the Most Merciful
 
-  quran-cli   v1.0.4  ·  Islamic terminal companion
+  quran-cli   v1.0.5  ·  Islamic terminal companion
 
   quran schedule                     full day view — prayers, sehri, iftar
   quran read 1                       read Al-Fatihah
