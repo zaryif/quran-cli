@@ -24,16 +24,28 @@
 بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
 In the name of Allah, the Most Gracious, the Most Merciful
 
-  quran-cli   v1.0.8  ·  Created by Md Zarif Azfar
+  Created by Md Zarif Azfar
 
   quran schedule                     full day view — prayers, sehri, iftar
   quran read 1                       read Al-Fatihah
-  quran read kahf                    search surah by name
-  quran read 2:255 --dual            Ayat ul-Kursi with Arabic
-  quran pray                         today's prayer times
-  quran ramadan                      sehri, iftar & tarawih
-  quran guide "..."                  ask the Quran & Hadith AI guide
-  quran --help                       all commands
+  quran read kahf                    read by name
+  quran read 2:255                   single ayah
+  quran read 2:1-10                  ayah range
+  quran search "patience"            search across the Quran
+  quran pray                         prayer times for your location
+  quran ramadan                      sehri, iftar & tarawih times
+  quran namaz                        prayer performance guide
+  quran lang                         change display language
+  quran connect                      notification channels
+  quran guide "how to make wudu"     AI-powered guide via Gemini
+  quran quote                        daily ayah quote
+  quran streak                       your reading activity
+  quran bookmark                     save positions
+  quran tafsir                       tafsir for any ayah
+  quran info surahs                  list all 114 surahs
+  quran config set key val           change a setting
+  quran update                       update quran-cli to latest version
+  quran --help                       full help
 ```
 
 ---

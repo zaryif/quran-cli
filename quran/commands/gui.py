@@ -80,6 +80,7 @@ def _main_menu_loop(TerminalMenu):
             "  Notification Channels",
             "  AI Guide",
             "  All Commands",
+            "  Update quran-cli",
             "  Exit",
         ]
 
@@ -113,6 +114,7 @@ def _main_menu_loop(TerminalMenu):
             lambda: _run("quran connect"),
             lambda: _run("quran guide"),
             lambda: _show_commands_ref(),
+            lambda: _run("quran update"),
         ]
 
         actions[idx]()
