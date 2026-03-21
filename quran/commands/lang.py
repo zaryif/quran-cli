@@ -203,7 +203,7 @@ def lang_cmd(
 
 
 def _interactive_picker() -> None:
-    """Full interactive language selection."""
+    """Full interactive language selection with arrow-key navigation."""
     from quran.config.settings import load, save
 
     cfg   = load()
@@ -217,28 +217,85 @@ def _interactive_picker() -> None:
     console.print(f"  Current secondary: [bold cyan]{LANGUAGES.get(cur_s, {}).get('name', cur_s)}[/bold cyan] [dim]({cur_s})[/dim]")
     console.print()
 
-    _show_language_table(current_p=cur_p, current_s=cur_s)
+    codes = list(LANGUAGES.keys())
+
+    try:
+        from simple_term_menu import TerminalMenu
+
+        # ── Primary language ─────────────────────────────────────────
+        labels_p = []
+        for c in codes:
+            info = LANGUAGES[c]
+            marker = " ● current" if c == cur_p else ""
+            labels_p.append(f"{c:4s}  {info['name']:14s}  {info['native']}{marker}")
+
+        console.print("  [dim]↑↓ to navigate · Enter to select · q to cancel[/dim]")
+        console.print("  [bold]Primary language (for reading & all commands):[/bold]\n")
+
+        menu_p = TerminalMenu(
+            labels_p,
+            title="  Select primary language:",
+            cursor_index=codes.index(cur_p) if cur_p in codes else 0,
+            menu_cursor_style=("fg_green", "bold"),
+            menu_highlight_style=("fg_green", "bold"),
+        )
+        idx_p = menu_p.show()
+
+        if idx_p is not None:
+            cfg["lang"] = codes[idx_p]
+            console.print(f"\n  [green]✓[/green] Primary → [bold green]{LANGUAGES[codes[idx_p]]['name']} ({LANGUAGES[codes[idx_p]]['native']})[/bold green]")
+        else:
+            console.print("\n  [dim]Cancelled — keeping current primary.[/dim]")
+
+        # ── Secondary language ───────────────────────────────────────
+        labels_s = []
+        for c in codes:
+            info = LANGUAGES[c]
+            marker = " ◈ current" if c == cur_s else ""
+            labels_s.append(f"{c:4s}  {info['name']:14s}  {info['native']}{marker}")
+
+        console.print("\n  [bold]Secondary language (shown on splash screen):[/bold]\n")
+
+        menu_s = TerminalMenu(
+            labels_s,
+            title="  Select secondary language:",
+            cursor_index=codes.index(cur_s) if cur_s in codes else 0,
+            menu_cursor_style=("fg_cyan", "bold"),
+            menu_highlight_style=("fg_cyan", "bold"),
+        )
+        idx_s = menu_s.show()
+
+        if idx_s is not None:
+            cfg["lang2"] = codes[idx_s]
+            console.print(f"\n  [green]✓[/green] Secondary → [bold cyan]{LANGUAGES[codes[idx_s]]['name']} ({LANGUAGES[codes[idx_s]]['native']})[/bold cyan]")
+        else:
+            console.print("\n  [dim]Cancelled — keeping current secondary.[/dim]")
+
+        save(cfg)
+
+    except ImportError:
+        # Fallback: old input()-based picker
+        _show_language_table(current_p=cur_p, current_s=cur_s)
+        console.print()
+        console.print("[dim]Primary language code (for reading & all commands):[/dim] ", end="")
+        inp_p = input().strip().lower()
+        if inp_p and inp_p in LANGUAGES:
+            cfg["lang"] = inp_p
+            console.print(f"  [green]✓[/green] Primary → [bold]{LANGUAGES[inp_p]['name']}[/bold]")
+        elif inp_p:
+            console.print(f"  [yellow]![/yellow] '{inp_p}' not recognised, keeping [bold]{cur_p}[/bold]")
+
+        console.print("[dim]Secondary language (shown on splash screen):[/dim] ", end="")
+        inp_s = input().strip().lower()
+        if inp_s and inp_s in LANGUAGES:
+            cfg["lang2"] = inp_s
+            console.print(f"  [green]✓[/green] Secondary → [bold]{LANGUAGES[inp_s]['name']}[/bold]")
+        elif inp_s:
+            console.print(f"  [yellow]![/yellow] '{inp_s}' not recognised, keeping [bold]{cur_s}[/bold]")
+
+        save(cfg)
 
     console.print()
-    console.print("[dim]Primary language code (for reading & all commands):[/dim] ", end="")
-    inp_p = input().strip().lower()
-    if inp_p and inp_p in LANGUAGES:
-        cfg["lang"] = inp_p
-        console.print(f"  [green]✓[/green] Primary → [bold]{LANGUAGES[inp_p]['name']}[/bold]")
-    elif inp_p:
-        console.print(f"  [yellow]![/yellow] '{inp_p}' not recognised, keeping [bold]{cur_p}[/bold]")
-
-    console.print("[dim]Secondary language (shown on splash screen):[/dim] ", end="")
-    inp_s = input().strip().lower()
-    if inp_s and inp_s in LANGUAGES:
-        cfg["lang2"] = inp_s
-        console.print(f"  [green]✓[/green] Secondary → [bold]{LANGUAGES[inp_s]['name']}[/bold]")
-    elif inp_s:
-        console.print(f"  [yellow]![/yellow] '{inp_s}' not recognised, keeping [bold]{cur_s}[/bold]")
-
-    save(cfg)
-    console.print()
-
     new_p = cfg.get("lang", cur_p)
     new_s = cfg.get("lang2", cur_s)
     _show_preview(new_p, new_s)

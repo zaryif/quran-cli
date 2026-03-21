@@ -173,18 +173,47 @@ def namaz_cmd(
 
 def _interactive_picker():
     console.print()
-    console.print("  [dim]Select a prayer:[/dim]")
-    keys = list(PRAYERS.keys())
-    for i, k in enumerate(keys, 1):
-        p = PRAYERS[k]
-        console.print(f"  [green]{i}[/green]  {p['name']}  [dim]{p['arabic']}[/dim]")
+    console.print(Rule("[dim]Salah Guide[/dim]", style="green"))
     console.print()
-    console.print("[dim]Enter number:[/dim] ", end="")
+
+    keys = list(PRAYERS.keys())
+
     try:
-        idx = int(input().strip()) - 1
-        _show_prayer(PRAYERS[keys[idx]])
-    except (ValueError, IndexError):
-        console.print("[dim]Cancelled.[/dim]")
+        from simple_term_menu import TerminalMenu
+
+        labels = []
+        for k in keys:
+            p = PRAYERS[k]
+            labels.append(f"{p['name']:10s}  {p['arabic']}   {p['time_desc']}")
+
+        console.print("  [dim]↑↓ to navigate · Enter to select · q to cancel[/dim]\n")
+
+        menu = TerminalMenu(
+            labels,
+            title="  Select a prayer:",
+            menu_cursor_style=("fg_green", "bold"),
+            menu_highlight_style=("fg_green", "bold"),
+        )
+        idx = menu.show()
+
+        if idx is not None:
+            _show_prayer(PRAYERS[keys[idx]])
+        else:
+            console.print("  [dim]Cancelled.[/dim]")
+
+    except ImportError:
+        # Fallback: numbered list
+        console.print("  [dim]Select a prayer:[/dim]")
+        for i, k in enumerate(keys, 1):
+            p = PRAYERS[k]
+            console.print(f"  [green]{i}[/green]  {p['name']}  [dim]{p['arabic']}[/dim]")
+        console.print()
+        console.print("[dim]Enter number:[/dim] ", end="")
+        try:
+            idx = int(input().strip()) - 1
+            _show_prayer(PRAYERS[keys[idx]])
+        except (ValueError, IndexError):
+            console.print("[dim]Cancelled.[/dim]")
 
 
 def _show_prayer(p: dict):
