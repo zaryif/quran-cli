@@ -70,17 +70,17 @@ def _main_menu_loop(TerminalMenu):
     """Looping main menu — returns to dashboard after each action."""
     while True:
         options = [
-            "  [ READ ]      Read Quran",
-            "  [ SEARCH ]    Search",
-            "  [ CALENDAR ]  Daily Prayer Schedule",
-            "  [ TIME ]      Prayer Times",
-            "  [ FASTING ]   Ramadan Guide",
-            "  [ NAMAZ ]     Namaz Guide",
-            "  [ LANG ]      Change Language",
-            "  [ NOTIFS ]    Notification Channels",
-            "  [ GUIDE ]     AI Guide",
-            "  [ COMMANDS ]  All Commands",
-            "  [ EXIT ]      Exit",
+            "  Read Quran",
+            "  Search",
+            "  Daily Prayer Schedule",
+            "  Prayer Times",
+            "  Ramadan Guide",
+            "  Namaz Guide",
+            "  Change Language",
+            "  Notification Channels",
+            "  AI Guide",
+            "  All Commands",
+            "  Exit",
         ]
 
         console.print("  [dim]↑↓ navigate · Enter select · q quit[/dim]\n")
@@ -137,9 +137,9 @@ def _read_submenu(TerminalMenu):
     console.print()
 
     options = [
-        "  [ LIST ]      Browse Surahs (1–114)",
-        "  [ AYAH ]      Read by Ayah Reference",
-        "  [ BACK ]      Return to Menu",
+        "  Browse Surahs (1–114)",
+        "  Read by Ayah Reference",
+        "  Return to Menu",
     ]
 
     menu = TerminalMenu(
@@ -210,13 +210,13 @@ def _read_with_navigation(surah_num: int, TerminalMenu):
         if surah_num < 114:
             next_meta = get_surah_meta(surah_num + 1)
             next_name = next_meta["name"] if next_meta else f"Surah {surah_num + 1}"
-            nav_options.append(f"  [ NEXT ]      {next_name}")
+            nav_options.append(f"  Next: {next_name}")
         if surah_num > 1:
             prev_meta = get_surah_meta(surah_num - 1)
             prev_name = prev_meta["name"] if prev_meta else f"Surah {surah_num - 1}"
-            nav_options.append(f"  [ PREV ]      {prev_name}")
-        nav_options.append("  [ LIST ]      Back to Surah List")
-        nav_options.append("  [ MENU ]      Back to Main Menu")
+            nav_options.append(f"  Previous: {prev_name}")
+        nav_options.append("  Back to Surah List")
+        nav_options.append("  Back to Main Menu")
 
         console.print()
         menu = TerminalMenu(

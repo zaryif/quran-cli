@@ -136,7 +136,7 @@ def print_banner() -> None:
     date_str = f"{today.strftime('%d %B %Y')}  ·  {hd} {hm_name} {hy} AH"
     c.print(Align.center(Text(date_str, style="bold white")))
 
-    c.print(Align.center(Text("quran-cli v1.0.6", style="dim white")))
+    c.print(Align.center(Text("quran-cli v1.0.7", style="dim white")))
     if is_ramadan():
         c.print(Align.center(Text("Ramadan Mubarak", style="bold white")))
 
