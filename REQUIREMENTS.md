@@ -236,15 +236,3 @@ pip install "quran-cli[dev]"
 | ntfy.sh notifications | Online (push only) |
 | Telegram/WhatsApp | Online |
 | News | Online (RSS feeds) |
-
----
-
-## Language & Typography (Arabic/Bangla)
-
-If you are reading the Quran entirely in **Arabic** or using the **Bangla (`bn`)** translation, ensuring proper rendering of ligatures is vital. 
-
-The `quran-cli` engine actively reshapes letters so they connect properly in the terminal. If you notice any weird spacing or disconnected letters in the Bangla translations, you **must** change your Terminal's settings to use a robust Unicode font specifically designed for complex scripts:
-
-* **[Noto Sans Bengali](https://fonts.google.com/noto/specimen/Noto+Sans+Bengali) (Highly Recommended for Bangla)**
-* `Noto Sans Arabic`
-* `JetBrains Mono`
