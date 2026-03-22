@@ -9,12 +9,11 @@ app = typer.Typer(
 )
 console = Console()
 
-from quran import __version__
 from quran.commands import (
     read, search, pray, remind, ramadan, eid, news,
     bookmark, tafsir, config as cfg_cmd, schedule, quote,
     streak, guide, connect, namaz, lang, gui, update, cache,
-    hadith, bot,
+    hadith,
 )
 app.add_typer(read.app,     name="read",     help="Read Quran by surah or ayah.")
 app.add_typer(search.app,   name="search",   help="Search across the Quran.")
@@ -25,7 +24,6 @@ app.add_typer(eid.app,      name="eid",      help="Eid salah guide & details.")
 app.add_typer(namaz.app,    name="namaz",    help="Prayer details & rakat breakdown.")
 app.add_typer(lang.app,     name="lang",     help="Set display language and translations.")
 app.add_typer(news.app,     name="news",     help="Muslim world news headlines.")
-app.add_typer(hadith.app,   name="hadith",   help="Browse and search authentic Hadith.")
 app.add_typer(bookmark.app, name="bookmark", help="Save and navigate reading positions.")
 app.add_typer(tafsir.app,   name="tafsir",   help="Tafsir for any ayah.")
 app.add_typer(cfg_cmd.app,  name="config",   help="Configure quran-cli settings.")
@@ -34,7 +32,7 @@ app.add_typer(guide.app,    name="guide",    help="AI Quran & Hadith guide (RAG)
 app.add_typer(connect.app,  name="connect",  help="Notification channels.")
 app.add_typer(update.app,   name="update",   help="Update quran-cli to the latest version.")
 app.add_typer(cache.app,    name="cache",    help="Download Quran for offline use.")
-app.add_typer(bot.app,      name="bot",      help="Telegram prayer reminder bot.")
+app.add_typer(hadith.app,   name="hadith",   help="Read authentic Hadith.")
 
 @app.command("quote")
 def quote_cmd():
@@ -87,16 +85,8 @@ def gui_cmd():
     show_gui()
 
 
-def version_callback(value: bool):
-    if value:
-        console.print(f"[bold green]quran-cli[/bold green] [dim]v{__version__}[/dim]")
-        raise typer.Exit()
-
 @app.callback(invoke_without_command=True)
-def main(
-    ctx: typer.Context,
-    version: bool = typer.Option(None, "--version", "-v", callback=version_callback, is_eager=True, help="Show version and exit."),
-):
+def main(ctx: typer.Context):
     """[bold green]quran-cli[/bold green] — run [green]quran gui[/green], [green]quran schedule[/green] or [green]quran --help[/green]"""
     if ctx.invoked_subcommand is None:
         from quran.commands.gui import show_gui

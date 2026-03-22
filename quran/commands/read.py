@@ -1,12 +1,11 @@
 """
 quran read — read any surah or ayah with Arabic + translation.
 
-FIX v1.2.0:
-  - Clear error message when fetch returns empty (first-run API miss,
-    rather than silent blank output).
-  - Added --dual2 flag: shows primary lang + secondary lang (lang2 from config)
-    side by side, for users who configured two languages.
-  - Language setting from config is properly applied.
+FIX v1.2.6:
+  - _interactive_read: fixed broken search call. The previous code imported
+    and called search_cmd(query) directly, which fails because Typer command
+    callbacks require a Context object as the first argument. Fixed by using
+    subprocess.run (same pattern as gui.py _run) to dispatch the command.
 
 Usage:
   quran read 1                      # Al-Fatihah by number
@@ -216,10 +215,7 @@ def read_cmd(
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _fetch_error(name: str, surah_n: int, lang: str) -> None:
-    """
-    Clear error when fetch returns empty — instead of the old silent blank screen.
-    Tells the user exactly what happened and how to fix it.
-    """
+    """Clear error when fetch returns empty."""
     console.print()
     console.print(
         f"  [red]✗[/red] Could not load [bold]{name}[/bold] in [bold]{lang}[/bold].\n"
@@ -289,13 +285,13 @@ def _interactive_read():
 
     # 1. Main Action Menu
     actions = [
-        "📖 Read Quran with Translation",
-        "🖇  Dual Mode (Arabic + Primary)",
-        "🖇  Dual Translation (Two Languages)",
-        "🔍 Search Quran",
-        "🚪 Exit"
+        "  Read Quran with Translation",
+        "  Dual Mode (Arabic + Primary)",
+        "  Dual Translation (Two Languages)",
+        "  Search Quran",
+        "  Exit"
     ]
-    
+
     console.print()
     console.print(Rule("[bold green]Quran Navigator[/bold green]", style="green"))
     console.print()
@@ -313,7 +309,7 @@ def _interactive_read():
         return
 
     # 2. Surah Selection
-    surah_labels = [f"{s[0]:3d}. {s[1]:20s} [dim]({s[2]})[/dim]" for s in SURAH_META]
+    surah_labels = [f"{s[0]:3d}. {s[1]:20s} {s[2]}" for s in SURAH_META]
     surah_menu = TerminalMenu(
         surah_labels,
         title="  Select a Surah:",
@@ -321,55 +317,70 @@ def _interactive_read():
         menu_cursor_style=("fg_green", "bold"),
     )
     s_idx = surah_menu.show()
-    if s_idx is None: return
+    if s_idx is None:
+        return
     surah_n = SURAH_META[s_idx][0]
 
     # 3. Language Selection Helper
-    def pick_lang(title: str):
+    def pick_lang(title: str) -> Optional[str]:
         lang_items = list(LANG_EDITIONS.keys())
         lang_labels = []
         for code in lang_items:
             name = LANGUAGES.get(code, {}).get("native", code)
-            lang_labels.append(f"{code:4s}  [dim]{name}[/dim]")
-        
-        l_menu = TerminalMenu(lang_labels, title=f"  {title}:", menu_cursor_style=("fg_green", "bold"))
+            lang_labels.append(f"{code:4s}  {name}")
+        l_menu = TerminalMenu(
+            lang_labels,
+            title=f"  {title}:",
+            menu_cursor_style=("fg_green", "bold"),
+        )
         l_idx = l_menu.show()
         return lang_items[l_idx] if l_idx is not None else None
 
     # 4. Handle Actions
     if idx == 0:  # Single Translation
         l1 = pick_lang("Select Translation Language")
-        if not l1: return
+        if not l1:
+            return
         _run_read_logic(surah_n, lang=l1)
-        
-    elif idx == 1: # Dual Mode (Arabic + L1)
+
+    elif idx == 1:  # Dual Mode (Arabic + L1)
         l1 = pick_lang("Select Translation Language")
-        if not l1: return
+        if not l1:
+            return
         _run_read_logic(surah_n, lang=l1, dual=True)
 
-    elif idx == 2: # Dual Translation (L1 + L2)
+    elif idx == 2:  # Dual Translation (L1 + L2)
         l1 = pick_lang("Select First Language")
-        if not l1: return
+        if not l1:
+            return
         l2 = pick_lang("Select Second Language")
-        if not l2: return
+        if not l2:
+            return
         _run_read_logic(surah_n, lang=l1, lang2_opt=l2, dual2=True)
-        
-    elif idx == 3: # Search
-        from quran.commands.search import search_cmd
-        query = typer.prompt("  Enter search query")
-        search_cmd(query)
+
+    elif idx == 3:  # Search — BUG FIX: use subprocess, not direct function call
+        console.print()
+        console.print("  [dim]Enter a search keyword:[/dim]")
+        console.print("  > ", end="")
+        try:
+            query = input().strip()
+        except (KeyboardInterrupt, EOFError):
+            return
+        if query:
+            import subprocess
+            subprocess.run(f'quran search "{query}"', shell=True)
 
 
-def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "", 
-                   dual: bool = False, dual2: bool = False, 
+def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
+                   dual: bool = False, dual2: bool = False,
                    arabic_only: bool = False, no_arabic: bool = False):
-    """Internal logic extracted from read_cmd."""
+    """Internal logic extracted from read_cmd for use by _interactive_read."""
     from quran.config.settings import load
     from quran.core.quran_engine import (
         get_surah_meta, fetch_surah, fetch_surah_dual,
         fetch_ayah_with_arabic, LANG_EDITIONS,
     )
-    
+
     cfg   = load()
     lang  = lang or cfg.get("lang", "en")
     lang2 = lang2_opt or cfg.get("lang2", "bn")
@@ -378,13 +389,14 @@ def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
         dual2 = True
 
     meta = get_surah_meta(surah_n)
-    if not meta: return
+    if not meta:
+        return
 
     _render_surah_header(meta)
-    
+
     show_arabic = not no_arabic
     use_dual    = dual or arabic_only
-    
+
     from_a = 1
     to_a   = None
 
@@ -400,7 +412,8 @@ def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
             ref_s = f"[dim green]{surah_n}:{a['ayah']}[/dim green]"
             t2    = s_map.get(a["ayah"], "")
             console.print(f"  {ref_s}  [white]{a['text']}[/white]")
-            if t2: console.print(f"        [dim]{t2}[/dim]")
+            if t2:
+                console.print(f"        [dim]{t2}[/dim]")
             console.print()
         return
 

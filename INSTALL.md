@@ -46,6 +46,29 @@ pip install -e .          # Linux / Windows
 quran
 ```
 
+### **Running Locally (Manual / No Install)**
+If the above commands fail, you can run the CLI directly from the source directory:
+
+**macOS / Linux:**
+```bash
+export PYTHONPATH=.
+python3 -m quran gui
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:PYTHONPATH="."
+$env:PYTHONIOENCODING="utf-8"
+python -m quran gui
+```
+
+**Windows (Command Prompt):**
+```cmd
+set PYTHONPATH=.
+set PYTHONIOENCODING=utf-8
+python -m quran gui
+```
+
 ---
 
 ## One-line installer
@@ -172,6 +195,10 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # macOS: if installed with pip3, the binary may be at:
 export PATH="$(python3 -m site --user-base)/bin:$PATH"
+
+# Windows: Use "python -m quran" instead
+# If "quran" is not recognized, the "python -m quran" method is the most reliable way 
+# to run the application across different Windows shell environments.
 ```
 
 **Arabic text renders incorrectly**

@@ -1,5 +1,5 @@
 # quran-cli Command Reference
-> Complete guide to every command, flag, and option.
+> Complete guide to every command, flag, and option. v1.2.6
 
 ---
 
@@ -15,11 +15,26 @@ quran --install-completion  # install shell autocomplete
 
 ## quran (default — no subcommand)
 
-Running `quran` with no arguments shows the welcome banner + quick-start hints.
+Running `quran` with no arguments shows the interactive dashboard.
 
 ```bash
 $ quran
 ```
+
+---
+
+## quran gui
+
+Interactive arrow-key dashboard (same as bare `quran`).
+
+```bash
+quran gui
+```
+
+Menu options: Read Quran · Read with Translation · Search · Daily Prayer Schedule ·
+Ramadan Guide · Prayer Details · Eid Guide · Browse Hadith · Muslim World News ·
+Reading Streak · Bookmarks · Change Language · Notification Channels · AI Guide ·
+All Commands · Run Command · Update quran-cli
 
 ---
 
@@ -31,20 +46,10 @@ Auto-detects Ramadan and adds Sehri, Iftar, Tarawih rows.
 ```bash
 quran schedule                      # today's full schedule (default view)
 quran schedule --week               # 7-day prayer timetable
-quran schedule --month              # full month (Ramadan: 30-day calendar)
 quran schedule --date 2026-03-25    # schedule for a specific date
-quran schedule --live               # live countdown, refreshes every second
-quran schedule --normal             # force Normal mode (hide Ramadan rows)
-quran schedule --ramadan            # force Ramadan mode (even outside Ramadan)
 ```
 
-**Output columns:**
-- Prayer name · Time · Progress bar (████░░░░) · Status (▶ next / ✓ done / —)
-
-**Colors:**
-- Green `▶` = next prayer
-- Amber = Ramadan-specific rows (Sehri, Iftar, Tarawih)
-- Dim = past prayers
+**Output columns:** Prayer name · Time · Progress bar (████░░░░) · Status (▶ next / ✓ done / —)
 
 ---
 
@@ -56,24 +61,12 @@ Prayer times and setup.
 quran pray                          # today's 5 prayer times + location
 quran pray next                     # countdown panel to next prayer
 quran pray setup                    # interactive: location + method wizard
-quran pray --method ISNA            # override method for this session
-quran pray --date 2026-04-01        # times for a different date
 ```
 
 **Supported calculation methods:**
-| Flag | Description | Region |
-|---|---|---|
-| `Karachi` | University of Islamic Sciences | South Asia, UK |
-| `ISNA` | Islamic Society of North America | North America |
-| `MWL` | Muslim World League | Europe, Far East |
-| `Makkah` | Umm Al-Qura, Makkah | Saudi Arabia, Gulf |
-| `Egypt` | Egyptian General Authority | Egypt, Sudan |
-| `Turkey` | Diyanet İşleri Başkanlığı | Turkey |
-| `Singapore` | MUIS | Singapore, Malaysia |
+`Karachi` · `ISNA` · `MWL` · `Makkah` · `Egypt` · `Turkey` · `Singapore` · `Tehran`
 
-**Asr methods:**
-- `Standard` — shadow = 1× object height (Shafi'i, Maliki, Hanbali)
-- `Hanafi` — shadow = 2× object height (Hanafi madhab)
+**Asr methods:** `Standard` (Shafi/Maliki/Hanbali) · `Hanafi`
 
 ---
 
@@ -87,21 +80,14 @@ quran read 2:255                    # single ayah (Ayat ul-Kursi)
 quran read 2:1-10                   # ayah range
 quran read 36                       # Surah Ya-Sin (full)
 quran read 36 --lang bn             # Bangla translation
-quran read 18 --dual                # Arabic + English side by side
+quran read 18 --dual                # Arabic + primary translation side by side
+quran read 18 --dual2               # primary + secondary (lang2) side by side
+quran read 18 --dual2 --lang en --lang2 bn  # explicit two-language mode
 quran read 2 --no-arabic            # translation only
 quran read 67 --lang ur             # Urdu (Jalandhry)
 ```
 
-**Language codes:**
-| Code | Language | Translator |
-|---|---|---|
-| `en` | English | Sahih International |
-| `bn` | Bengali/Bangla | — |
-| `ar` | Arabic | Original |
-| `ur` | Urdu | Jalandhry |
-| `tr` | Turkish | Diyanet |
-| `fr` | French | Hamidullah |
-| `id` | Indonesian | Kemenag |
+**Language codes:** `en` · `bn` · `ar` · `ur` · `tr` · `fr` · `id` · `ru` · `de` · `es` · `zh` · `nl` · `ms`
 
 ---
 
@@ -112,13 +98,10 @@ Full-text search across all cached Quran text.
 ```bash
 quran search "patience"             # search in default language
 quran search "sabr"                 # Arabic keyword
-quran search "light and darkness" --lang en
-quran search "رحمة" --lang ar       # Arabic full search
-quran search "tawakkul" --limit 5   # limit results
+quran search "light" --lang en
+quran search "رحمة" --lang ar
+quran search "tawakkul" --limit 5
 ```
-
-> **Note:** Search works on cached surahs. Read a surah first to cache it.
-> `quran read 1-114` will cache all surahs (takes a few minutes on first run).
 
 ---
 
@@ -136,6 +119,41 @@ Source: Ibn Kathir (brief) via AlQuran.cloud API. Requires internet.
 
 ---
 
+## quran hadith  *(new in v1.2.6)*
+
+Browse and search authentic Hadith from the Kutub al-Sittah.
+All data from fawazahmed0/hadith-api (free CDN, no API key).
+Only Sahih and Hasan grade hadith.
+
+```bash
+quran hadith                        # interactive topic picker
+quran hadith daily                  # today's hadith of the day (rotates daily)
+quran hadith topics                 # list all 19 topic categories
+quran hadith search "patience"      # search by topic keyword
+quran hadith search "tawakkul"      # search for reliance on Allah
+quran hadith read bukhari 1 1       # read a specific hadith
+quran hadith read muslim 6 38       # Sahih Muslim on patience
+quran hadith read tirmidhi 27 1     # Jami at-Tirmidhi on tawakkul
+```
+
+**Available topic categories:**
+`intention` · `prayer` · `fasting` · `quran` · `pillars` · `friday` ·
+`laylatul-qadr` · `parents` · `consistency` · `kindness` · `patience` ·
+`charity` · `brotherhood` · `dua` · `wudu` · `dhikr` · `tawakkul` ·
+`knowledge` · `repentance`
+
+**Collections:**
+| Key | Full Name |
+|---|---|
+| `bukhari` | Sahih Bukhari |
+| `muslim` | Sahih Muslim |
+| `abudawud` | Abu Dawud |
+| `tirmidhi` | Jami at-Tirmidhi |
+| `nasai` | Sunan an-Nasa'i |
+| `ibnmajah` | Sunan Ibn Majah |
+
+---
+
 ## quran guide  *(AI-powered)*
 
 Ask questions answered from Quran and authentic Hadith.
@@ -143,42 +161,13 @@ Ask questions answered from Quran and authentic Hadith.
 ```bash
 quran guide "how to perform wudu"
 quran guide "what does the Quran say about patience"
-quran guide "sunnah acts on Friday"
-quran guide "ruling on fasting for travelers"
-quran guide --hadith "virtues of Salah"    # Hadith-focused search
+quran guide --hadith "virtues of Salah"
 quran guide --quran "signs of the Day of Judgement"
 quran guide --interactive                  # multi-turn chat mode
 quran guide --offline "what is tawakkul"  # BM25 search, no API
 ```
 
-**How it works:**
-1. Your question is matched against 6236 Quran ayahs + 900+ authentic hadith
-2. Top-5 most relevant passages are retrieved (BM25 or semantic search)
-3. Claude claude-sonnet-4-20250514 generates an answer grounded in those passages
-4. Every claim is cited: `[Quran 2:186]` or `[Bukhari 8:395]`
-
-**Authenticity policy:**
-- Only Sahih and Hasan hadith in the corpus
-- Da'if (weak) hadith clearly labelled if shown
-- No unverified quotes
-
-**Requirements:** `ANTHROPIC_API_KEY` environment variable for AI mode.
-Offline mode works without API key.
-
----
-
-## quran cache
-
-Download Quran translations so you can read entirely offline without relying on the AlQuran.cloud API.
-
-```bash
-quran cache                         # view what languages and surahs are cached locally
-quran cache download                # interactive prompt to select languages to cache
-quran cache download --all          # download all 13 supported languages (114 surahs each)
-quran cache clear                   # clear the local SQLite cache to free up disk space
-```
-
-> **Note:** The cache is automatically populated as you read `quran read`. This command just lets you pre-download everything all at once.
+**Requirements:** `ANTHROPIC_API_KEY` environment variable for AI mode. Offline mode works without API key.
 
 ---
 
@@ -190,13 +179,11 @@ Ramadan timings, calendar, and fast tracker.
 quran ramadan                       # today's sehri, iftar, tarawih + fast progress
 quran ramadan --week                # 7-day sehri/iftar table
 quran ramadan --month               # full 30-day Ramadan calendar
-quran ramadan --notify              # show alert settings
 quran ramadan --fast                # mark today's fast as complete (streak++)
-quran ramadan --export csv          # export month to CSV
-quran ramadan --export ical         # export to .ics calendar file
 ```
 
-**When not in Ramadan:** shows countdown to next Ramadan.
+Output includes: Sehri end time · Iftar time · Tarawih time · Fast duration ·
+Laylatul Qadr nights highlighted (21, 23, 25, 27, 29)
 
 ---
 
@@ -206,24 +193,10 @@ Complete Eid guide — Eid ul-Fitr and Eid ul-Adha.
 
 ```bash
 quran eid                           # next Eid overview + dates
-quran eid fitr                      # Eid ul-Fitr salah guide (step by step)
+quran eid fitr                      # Eid ul-Fitr salah guide (9 steps)
 quran eid adha                      # Eid ul-Adha + Qurbani guide
 quran eid --takbeer                 # Takbeer text (Arabic + transliteration)
-quran eid --countdown               # days until next Eid
 ```
-
-**Eid ul-Fitr guide includes:**
-- Sunnah acts before salah
-- 9-step salah guide (including Khutbah protocol)
-- Zakat ul-Fitr rules
-- Takbeer text
-
-**Eid ul-Adha guide includes:**
-- 7-step sunnah checklist
-- Salah guide
-- Qurbani animal rules (Goat: 1, Cow/Camel: up to 7)
-- Meat distribution: 1/3 · 1/3 · 1/3
-- Takbeer al-Tashreeq (9th–13th Dhul Hijjah)
 
 ---
 
@@ -232,24 +205,19 @@ quran eid --countdown               # days until next Eid
 Deep guide for performing each prayer.
 
 ```bash
-quran namaz                         # interactive prayer details picker
-quran namaz fajr                    # Fajr — rakah breakdown + description
+quran namaz                         # interactive prayer picker
+quran namaz fajr
 quran namaz dhuhr
 quran namaz asr
 quran namaz maghrib
 quran namaz isha
-quran namaz witr                    # Witr prayer guide
-quran namaz jummah                  # Jumu'ah (Friday) prayer guide
+quran namaz witr                    # Witr guide with Qunoot
+quran namaz jummah                  # Friday prayer guide
 quran namaz tarawih                 # Tarawih (Ramadan) guide
 ```
 
-**Output per prayer:**
-- Arabic name + transliteration
-- Time today (from your location)
-- Rakah breakdown: Sunnah before · Fard · Sunnah after · Nafl
-- Colour-coded rakah dots (filled = Fard, outline = Sunnah)
-- Description of significance
-- Common mistakes to avoid
+Output per prayer: Arabic name · Time today · Rakah breakdown (Sunnah/Fard/Nafl) ·
+Color-coded rakah dots · Significance · Common mistakes · Du'a
 
 ---
 
@@ -263,11 +231,10 @@ quran remind off                    # stop daemon
 quran remind status                 # show status + settings
 quran remind set --goal 5ayah       # set daily reading goal
 quran remind set --at 20:00         # set reading reminder time
-quran remind set --prayers fajr,asr # choose which prayers to be reminded about
-quran remind set --prayers all      # turn on reminders for all 5 prayers
-quran remind set --prayers none     # only get the reading goal reminder
-quran remind set --advance 15       # get phone/telegram push notifications 15 mins early
-quran remind set --adhan on         # enable adhan sound
+quran remind set --prayers fajr,asr # choose which prayers to notify
+quran remind set --prayers all      # all 5 prayers
+quran remind set --prayers none     # reading goal only
+quran remind set --advance 15       # notify N minutes before prayer
 quran remind phone                  # link phone via ntfy.sh (QR code)
 quran remind test                   # send a test notification now
 ```
@@ -280,23 +247,45 @@ Set up notification channels for cross-device alerts.
 
 ```bash
 quran connect list                  # show all channels + status
-quran connect telegram              # setup Telegram bot wizard
-quran connect whatsapp              # setup WhatsApp (Twilio) wizard
-quran connect gmail                 # setup Gmail reminder wizard
-quran connect webhook <url>         # set custom webhook URL
-quran connect test telegram         # send test notification to Telegram
-quran connect test whatsapp
-quran connect test gmail
+quran connect telegram              # setup Telegram push notifications
+quran connect whatsapp              # setup WhatsApp (Twilio)
+quran connect gmail                 # setup Gmail reminder digest
+quran connect ntfy                  # link phone via ntfy.sh (free, QR)
+quran connect webhook <url>         # Discord, Slack, Home Assistant
+quran connect test telegram         # send test notification
+quran connect verify                # test all enabled channels at once
 quran connect off telegram          # disable a channel
-quran connect on telegram           # re-enable a channel
+quran connect on  telegram          # re-enable a channel
 ```
 
-**Notification triggers (all channels):**
-- Prayer times (Fajr, Dhuhr, Asr, Maghrib, Isha)
-- Sehri warning (configurable minutes before Fajr)
-- Iftar time (Maghrib)
-- Daily Quran reading goal reminder
-- Ramadan special: Laylatul Qadr nights notification
+---
+
+## quran bot  *(new in v1.2.6)*
+
+Standalone Telegram prayer reminder bot. Free via Telegram Bot API.
+Users subscribe with `/start` in the bot, receive all 5 prayer times
+plus Ramadan and Laylatul Qadr alerts.
+
+```bash
+quran bot setup                     # step-by-step BotFather guide
+quran bot start                     # start the bot (runs in foreground)
+quran bot start --token <token>     # start with explicit token
+quran bot status                    # check bot configuration
+```
+
+**Telegram bot commands (for end users):**
+```
+/start          subscribe + show welcome
+/pray           today's prayer times
+/schedule       full day schedule
+/ramadan        Ramadan sehri/iftar timings
+/ayah           random ayah
+/hadith         hadith of the day
+/settings       how to change location/method
+/setlocation    /setlocation Dhaka or /setlocation 23.81,90.41
+/setmethod      /setmethod Karachi
+/stop           unsubscribe
+```
 
 ---
 
@@ -332,7 +321,6 @@ Reading and fasting consistency tracker.
 
 ```bash
 quran streak                        # show reading + fasting streaks
-quran streak --reset reading        # reset reading streak
 ```
 
 ---
@@ -351,27 +339,40 @@ quran bookmark delete "fajr"        # delete bookmark
 
 ---
 
+## quran cache
+
+Download Quran translations for fully offline use.
+
+```bash
+quran cache                         # show what's currently cached
+quran cache download                # interactive: pick languages, download
+quran cache download --all          # download all 13 languages
+quran cache download --lang bn      # download a single language
+quran cache clear                   # delete cache to free disk space
+```
+
+---
+
 ## quran config
 
 View and update all settings.
 
 ```bash
 quran config show                   # show all settings
-quran config set lang bn            # set language
-quran config set method Karachi     # prayer method
-quran config set asr_method Hanafi  # Asr calculation
+quran config set lang bn            # set primary language
+quran config set lang2 ur           # set secondary (splash screen) language
+quran config set method Karachi     # prayer calculation method
+quran config set asr_method Hanafi  # Asr calculation (Standard or Hanafi)
 quran config set location auto      # re-run IP geolocation
 quran config set location.city Dhaka
 quran config set location.lat 23.8103
 quran config set location.lon 90.4125
 quran config set remind.goal_ayahs 10
 quran config set remind.goal_time 21:00
+quran config set remind.advance_min 15
 quran config set ramadan.notify_sehri_min 20
 quran config set ramadan.notify_iftar_min 10
 quran config set display.arabic true
-quran config set display.dual false
-quran config set ai.enabled true
-quran config set ai.embeddings bm25     # or sentence-transformers
 quran config reset                  # reset all to defaults
 quran config reset --yes            # skip confirmation
 ```
@@ -393,6 +394,16 @@ quran info location                 # show detected location
 
 ---
 
+## quran update
+
+Update to the latest version from GitHub.
+
+```bash
+quran update
+```
+
+---
+
 ## Shell integration
 
 Add to `~/.bashrc` or `~/.zshrc`:
@@ -404,9 +415,11 @@ quran quote 2>/dev/null
 # Show next prayer in prompt (PS1)
 export PS1='$(quran pray next --short 2>/dev/null) \$ '
 
-# Alias for quick schedule
+# Quick aliases
 alias qs='quran schedule'
 alias qp='quran pray next'
+alias qr='quran read'
+alias qh='quran hadith daily'
 ```
 
 ---
@@ -415,6 +428,7 @@ alias qp='quran pray next'
 
 ```bash
 ANTHROPIC_API_KEY=sk-ant-...        # enables quran guide AI mode
+TELEGRAM_BOT_TOKEN=123:ABC...       # enables quran bot start without config
 QURAN_CLI_CONFIG=/path/to/config    # override config directory
 QURAN_CLI_DATA=/path/to/data        # override data directory
 QURAN_CLI_DEBUG=1                   # verbose debug logging
@@ -438,12 +452,7 @@ QURAN_CLI_OFFLINE=1                 # force offline mode (no HTTP)
 ## Shell autocomplete
 
 ```bash
-# Bash
 quran --install-completion bash
-
-# Zsh
 quran --install-completion zsh
-
-# Fish
 quran --install-completion fish
 ```

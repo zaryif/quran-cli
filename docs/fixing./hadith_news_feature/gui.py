@@ -3,9 +3,6 @@ Interactive GUI dashboard for quran-cli.
 
 Provides a looping, arrow-key navigable terminal dashboard with sub-menus
 for reading, commands reference, and all major features.
-
-v1.2.6: Added Eid Guide, Browse Hadith, Muslim World News, Reading Streak,
-        Bookmarks to the main menu. All existing code preserved unchanged.
 """
 from __future__ import annotations
 import sys
@@ -20,38 +17,32 @@ console = Console()
 
 # ── All Commands Reference ────────────────────────────────────────────────────
 COMMANDS_REF = [
-    ("quran",                        "Interactive dashboard"),
-    ("quran read <surah>",           "Read by number: quran read 1"),
-    ("quran read <name>",            "Read by name: quran read kahf"),
-    ("quran read 2:255",             "Single ayah"),
-    ("quran read 2:1-10",            "Ayah range"),
-    ("quran read 36 --dual",         "Arabic + translation"),
-    ("quran read 36 --lang bn",      "Read in Bangla"),
-    ("quran search \"patience\"",    "Search across the Quran"),
-    ("quran pray",                   "Prayer times for your location"),
-    ("quran schedule",               "Full day schedule"),
-    ("quran ramadan",                "Sehri, Iftar & Tarawih times"),
-    ("quran namaz",                  "Prayer details & rakat breakdown"),
-    ("quran eid",                    "Eid guide + salah steps"),
-    ("quran hadith",                 "Browse authentic Hadith"),
-    ("quran hadith daily",           "Hadith of the day"),
-    ("quran hadith search <topic>",  "Search hadith by topic"),
-    ("quran hadith topics",          "List all hadith topic categories"),
-    ("quran hadith read col bk num", "Read specific hadith"),
-    ("quran news",                   "Muslim world headlines"),
-    ("quran lang",                   "Change display language"),
-    ("quran connect",                "Notification channels"),
-    ("quran guide \"...\"",          "AI Quran & Hadith guide"),
-    ("quran quote",                  "Daily ayah"),
-    ("quran streak",                 "Reading & fasting streaks"),
-    ("quran bookmark",               "Save reading positions"),
-    ("quran tafsir",                 "Tafsir for any ayah"),
-    ("quran cache download",         "Download Quran for offline use"),
-    ("quran info surahs",            "List all 114 surahs"),
-    ("quran info hijri",             "Today's Hijri date"),
-    ("quran info location",          "Your detected location"),
-    ("quran config set key val",     "Change a setting"),
-    ("quran --help",                 "Full help"),
+    ("quran",                      "Interactive dashboard"),
+    ("quran read <surah>",         "Read by number: quran read 1"),
+    ("quran read <name>",          "Read by name: quran read kahf"),
+    ("quran read 2:255",           "Single ayah"),
+    ("quran read 2:1-10",          "Ayah range"),
+    ("quran read 36 --dual",       "Arabic + translation"),
+    ("quran read 36 --lang bn",    "Read in Bangla"),
+    ("quran search \"patience\"",  "Search across the Quran"),
+    ("quran pray",                 "Prayer times for your location"),
+    ("quran schedule",             "Full day schedule"),
+    ("quran ramadan",              "Sehri, Iftar & Tarawih times"),
+    ("quran namaz",                "Prayer details & rakat breakdown"),
+    ("quran lang",                 "Change display language"),
+    ("quran connect",              "Notification channels"),
+    ("quran guide \"...\"",        "AI Quran & Hadith guide"),
+    ("quran quote",                "Daily ayah"),
+    ("quran streak",               "Reading streak"),
+    ("quran bookmark",             "Save reading positions"),
+    ("quran tafsir",               "Tafsir for any ayah"),
+    ("quran info surahs",          "List all 114 surahs"),
+    ("quran info hijri",           "Today's Hijri date"),
+    ("quran info location",        "Your detected location"),
+    ("quran config set key val",   "Change a setting"),
+    ("quran news",                 "Muslim world news headlines"),
+    ("quran hadith",               "Read authentic Hadith"),
+    ("quran --help",               "Full help"),
 ]
 
 
@@ -87,14 +78,10 @@ def _main_menu_loop(TerminalMenu):
             "  Daily Prayer Schedule",
             "  Ramadan Guide",
             "  Prayer Details",
-            "  Eid Guide",
-            # "  Browse Hadith",
-            # "  Muslim World News",
-            "  Reading Streak",
-            # "  Bookmarks",
-            # "  Change Language",
+            "  Change Language",
             "  Notification Channels",
-            "  AI Guide",
+            "  Islamic News",
+            "  Read Hadith",
             "  All Commands",
             "  Run Command",
             "  Update quran-cli",
@@ -121,23 +108,20 @@ def _main_menu_loop(TerminalMenu):
             sys.exit(0)
 
         actions = [
-            lambda: _read_submenu(TerminalMenu),              # Read Quran
-            lambda: _read_with_translation_flow(TerminalMenu),# Read with Translation
-            lambda: _search_prompt(),                         # Search
-            lambda: _run("quran schedule"),                   # Daily Prayer Schedule
-            lambda: _run("quran ramadan"),                    # Ramadan Guide
-            lambda: _run("quran namaz"),                      # Prayer Details
-            lambda: _run("quran eid"),                        # Eid Guide
-            # lambda: _hadith_submenu(TerminalMenu),            # Browse Hadith
-            # lambda: _news_submenu(TerminalMenu),              # Muslim World News
-            lambda: _run("quran streak"),                     # Reading Streak
-            # lambda: _run("quran bookmark"),                   # Bookmarks
-            # lambda: _run("quran lang"),                       # Change Language
-            lambda: _run("quran connect"),                    # Notification Channels
-            lambda: _run("quran guide"),                      # AI Guide
-            lambda: _show_commands_ref(),                     # All Commands
-            lambda: _run_any_command(),                       # Run Command
-            lambda: _run("quran update"),                     # Update quran-cli
+            lambda: _read_submenu(TerminalMenu),
+            lambda: _read_with_translation_flow(TerminalMenu),
+            lambda: _search_prompt(),
+            lambda: _run("quran schedule"),
+            lambda: _run("quran ramadan"),
+            lambda: _run("quran namaz"),
+            lambda: _run("quran lang"),
+            lambda: _run("quran connect"),
+            lambda: _run("quran guide"),
+            lambda: _run("quran news"),
+            lambda: _read_hadith_flow(TerminalMenu),
+            lambda: _show_commands_ref(),
+            lambda: _run_any_command(),
+            lambda: _run("quran update"),
         ]
 
         actions[idx]()
@@ -298,91 +282,6 @@ def _read_by_ref():
         _run(f"quran read {ref} --dual")
 
 
-def _hadith_submenu(TerminalMenu):
-    """Sub-menu for browsing Hadith."""
-    console.print()
-
-    options = [
-        "  Today's hadith of the day",
-        "  Browse by topic",
-        "  Search by keyword",
-        "  Read specific hadith",
-        "  Return to Menu",
-    ]
-
-    menu = TerminalMenu(
-        options,
-        title="  Browse Hadith:",
-        menu_cursor="> ",
-        menu_cursor_style=("fg_cyan", "bold"),
-        menu_highlight_style=("fg_cyan", "bold"),
-        clear_screen=False,
-    )
-
-    try:
-        idx = menu.show()
-    except KeyboardInterrupt:
-        return
-
-    if idx == 0:
-        _run("quran hadith daily")
-    elif idx == 1:
-        _run("quran hadith")
-    elif idx == 2:
-        console.print()
-        console.print("  [dim]Enter a topic (e.g. patience, prayer, fasting, tawakkul):[/dim]")
-        console.print("  > ", end="")
-        try:
-            kw = input().strip()
-            if kw:
-                _run(f'quran hadith search "{kw}"')
-        except (KeyboardInterrupt, EOFError):
-            pass
-    elif idx == 3:
-        console.print()
-        console.print("  [dim]Format: <collection> <book> <number>  e.g. bukhari 1 1[/dim]")
-        console.print("  > ", end="")
-        try:
-            parts = input().strip().split()
-            if len(parts) == 3:
-                _run(f"quran hadith read {parts[0]} {parts[1]} {parts[2]}")
-        except (KeyboardInterrupt, EOFError):
-            pass
-    # idx == 4 or None → back
-
-
-def _news_submenu(TerminalMenu):
-    """Sub-menu for selecting a news source."""
-    console.print()
-
-    options = [
-        "  Al Jazeera  — global Muslim world news",
-        "  Seekers     — SeekersGuidance Islamic knowledge",
-        "  5Pillars    — British Muslim news",
-        "  IslamQA     — Islamic rulings & Q&A",
-        "  Return to Menu",
-    ]
-
-    menu = TerminalMenu(
-        options,
-        title="  Muslim World News — select source:",
-        menu_cursor="> ",
-        menu_cursor_style=("fg_cyan", "bold"),
-        menu_highlight_style=("fg_cyan", "bold"),
-        clear_screen=False,
-    )
-
-    try:
-        idx = menu.show()
-    except KeyboardInterrupt:
-        return
-
-    source_map = {0: "aljazeera", 1: "seekers", 2: "5pillars", 3: "islamqa"}
-    if idx is not None and idx in source_map:
-        _run(f"quran news --source {source_map[idx]}")
-    # idx == 4 or None → back
-
-
 def _show_commands_ref():
     """Display a full commands reference table."""
     console.print()
@@ -416,7 +315,15 @@ def _run(cmd: str):
     """Execute a CLI command."""
     console.print(f"\n  [dim]→ {cmd}[/dim]\n")
     try:
-        subprocess.run(cmd, shell=True)
+        # Use PYTHONPATH=. to ensure local code is used if running via this dashboard
+        import os
+        env = os.environ.copy()
+        if "PYTHONPATH" not in env:
+            env["PYTHONPATH"] = "."
+        else:
+            env["PYTHONPATH"] = f".:{env['PYTHONPATH']}"
+            
+        subprocess.run(cmd, shell=True, env=env)
     except Exception as e:
         console.print(f"  [red]Error: {e}[/red]")
 
@@ -427,42 +334,43 @@ def _read_with_translation_flow(TerminalMenu):
     from quran.commands.lang import LANGUAGES
 
     # 1. Select Language 1
-    lang_items = list(LANG_EDITIONS.keys())
+    lang_items = ["ar"] + list(LANG_EDITIONS.keys())
+    if "ar" in lang_items and lang_items.count("ar") > 1:
+        lang_items.remove("ar") # avoid duplicates if ar was already in LANG_EDITIONS
+
     lang_labels = []
     for code in lang_items:
-        name = LANGUAGES.get(code, {}).get("native", code)
-        lang_labels.append(f"{code:4s}  {name}")
-
+        name = LANGUAGES.get(code, {}).get("native", "Arabic" if code == "ar" else code)
+        lang_labels.append(f"{code:4s}  [dim]{name}[/dim]")
+    
     l1_menu = TerminalMenu(
-        lang_labels,
+        lang_labels, 
         title="  Select First Language (Left):",
         menu_cursor="> ",
         menu_cursor_style=("fg_cyan", "bold"),
         menu_highlight_style=("fg_cyan", "bold"),
     )
     l1_idx = l1_menu.show()
-    if l1_idx is None:
-        return
+    if l1_idx is None: return
     l1 = lang_items[l1_idx]
 
     # 2. Select Language 2
     l2_menu = TerminalMenu(
-        lang_labels,
+        lang_labels, 
         title=f"  Select Second Language (Right) [L1: {l1}]:",
         menu_cursor="> ",
         menu_cursor_style=("fg_cyan", "bold"),
         menu_highlight_style=("fg_cyan", "bold"),
     )
     l2_idx = l2_menu.show()
-    if l2_idx is None:
-        return
+    if l2_idx is None: return
     l2 = lang_items[l2_idx]
 
     # 3. Select Surah
     surah_labels = []
     for s in SURAH_META:
         num, name, meaning, ayahs, typ = s
-        surah_labels.append(f"{num:>3}.  {name:<18s}  {meaning}")
+        surah_labels.append(f"{num:>3}.  {name:<18s}  [dim]{meaning}[/dim]")
 
     s_menu = TerminalMenu(
         surah_labels,
@@ -472,8 +380,7 @@ def _read_with_translation_flow(TerminalMenu):
         menu_cursor_style=("fg_cyan", "bold"),
     )
     s_idx = s_menu.show()
-    if s_idx is None:
-        return
+    if s_idx is None: return
     surah_num = SURAH_META[s_idx][0]
 
     # 4. Command Dispatch Logic
@@ -484,13 +391,83 @@ def _read_with_translation_flow(TerminalMenu):
     elif l2 == "ar":
         cmd = f"quran read {surah_num} --dual --lang {l1}"
     else:
+        # Both are translations
         cmd = f"quran read {surah_num} --dual2 --lang {l1} --lang2 {l2}"
 
     _run(cmd)
-
+    
     # Wait for user to read before returning to menu
     console.print("\n  [dim]Press Enter to return to menu…[/dim]", end="")
     try:
         input()
     except (KeyboardInterrupt, EOFError):
         pass
+
+
+def _read_hadith_flow(TerminalMenu):
+    """Sub-menu for reading Hadith."""
+    console.print()
+
+    options = [
+        "  Random Sahih Hadith",
+        "  Read by Collection (Bukhari, Muslim...)",
+        "  Return to Menu",
+    ]
+
+    menu = TerminalMenu(
+        options,
+        title="  Read Hadith:",
+        menu_cursor="> ",
+        menu_cursor_style=("fg_cyan", "bold"),
+        menu_highlight_style=("fg_cyan", "bold"),
+        clear_screen=False,
+    )
+
+    try:
+        idx = menu.show()
+    except KeyboardInterrupt:
+        return
+
+    if idx == 0:
+        _run("quran hadith random")
+    elif idx == 1:
+        _hadith_manual_flow(TerminalMenu)
+
+    # Wait for user to read before returning to menu
+    if idx in (0, 1):
+        console.print("\n  [dim]Press Enter to return to menu…[/dim]", end="")
+        try:
+            input()
+        except (KeyboardInterrupt, EOFError):
+            pass
+
+
+def _hadith_manual_flow(TerminalMenu):
+    """Prompt for collection and number."""
+    from quran.commands.hadith import COLLECTION_NAMES
+    
+    labels = [f"  {v}" for v in COLLECTION_NAMES.values()]
+    keys   = list(COLLECTION_NAMES.keys())
+    
+    menu = TerminalMenu(
+        labels,
+        title="  Select Collection:",
+        menu_cursor="> ",
+        menu_cursor_style=("fg_cyan", "bold"),
+        menu_highlight_style=("fg_cyan", "bold"),
+    )
+    
+    idx = menu.show()
+    if idx is None: return
+    
+    col = keys[idx]
+    
+    console.print(f"\n  [dim]Enter Hadith number (e.g. 1):[/dim]")
+    console.print("  > ", end="")
+    try:
+        num = input().strip()
+    except (KeyboardInterrupt, EOFError):
+        return
+    
+    if num.isdigit():
+        _run(f"quran hadith read {col} {num}")

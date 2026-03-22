@@ -27,13 +27,13 @@
 
 | Package | Version | Purpose |
 |---|---|---|
-| `httpx` | `>=0.27.0` | HTTP requests to AlQuran.cloud, ip-api.com, ntfy.sh, Hadith API. Chosen over `requests` for async-readiness and better timeout handling. |
+| `httpx` | `>=0.27.0` | HTTP requests to AlQuran.cloud, ip-api.com, ntfy.sh, Hadith API, Nominatim (bot geocoding). Chosen over `requests` for async-readiness and better timeout handling. |
 
 ### Prayer Times Scheduling
 
 | Package | Version | Purpose |
 |---|---|---|
-| `apscheduler` | `>=3.10.0` | Background daemon for prayer notifications. Manages `date`-triggered jobs, persists PID, handles midnight reschedule. |
+| `apscheduler` | `>=3.10.0` | Background daemon for prayer notifications. Manages `date`-triggered jobs, persists PID, handles midnight reschedule. Also used in the Telegram bot for per-subscriber prayer reminders. |
 
 ### Notifications
 
@@ -61,6 +61,12 @@
 |---|---|---|
 | `rank-bm25` | `>=0.2.2` | BM25 (Okapi BM25) ranking algorithm for semantic search over Quran+Hadith corpus. Fully offline — no model download required. |
 
+### Interactive TUI
+
+| Package | Version | Purpose |
+|---|---|---|
+| `simple-term-menu` | `>=1.6` | Arrow-key navigation for the `quran gui` dashboard, surah browser, language picker, hadith topic picker, and all interactive menus. |
+
 ---
 
 ## Optional Dependencies
@@ -78,16 +84,18 @@ export ANTHROPIC_API_KEY=sk-ant-...
 quran guide "how to perform wudu"
 ```
 
-### Telegram Notifications
+### Telegram Bot + Notifications
 
 | Package | Version | Purpose |
 |---|---|---|
-| `python-telegram-bot` | `>=21.0` | Telegram Bot API client. Only needed if using `quran connect telegram`. |
+| `python-telegram-bot` | `>=21.0` | Telegram Bot API client. Used by both `quran connect telegram` (push notifications) and `quran bot start` (standalone prayer reminder bot with `/pray`, `/hadith`, `/ayah` commands). |
 
 **Setup:**
 ```bash
 pip install quran-cli[connectors]
-quran connect telegram
+quran connect telegram    # push notifications from daemon
+quran bot setup           # standalone prayer bot
+quran bot start
 ```
 
 ### WhatsApp Notifications
@@ -115,7 +123,7 @@ quran config set ai.embeddings sentence-transformers
 | Package | Version | Purpose |
 |---|---|---|
 | `pytest` | `>=8.0` | Test runner |
-| `pytest-asyncio` | latest | Async test support |
+| `pytest-asyncio` | latest | Async test support (needed for bot tests) |
 
 ```bash
 pip install quran-cli[dev]
@@ -136,12 +144,13 @@ These are part of Python 3.11+ stdlib — no installation needed:
 | `pathlib` | Cross-platform file paths |
 | `smtplib` | Gmail SMTP for email notifications |
 | `email.mime` | Email construction for Gmail connector |
-| `json` | Bookmarks, streaks, connector credentials |
+| `json` | Bookmarks, streaks, connector credentials, bot subscriber storage |
 | `secrets` | Cryptographically secure random topic IDs for ntfy.sh |
 | `threading` | Parallel connector dispatch |
 | `signal` | Daemon process management (SIGTERM) |
 | `os` | Double-fork daemonization (Unix) |
 | `re` | Arabic text processing, surah name matching |
+| `asyncio` | Async Telegram bot event loop |
 
 ---
 
@@ -152,22 +161,25 @@ These are external services the CLI talks to — all free, open, no API key:
 | Service | URL | Used for |
 |---|---|---|
 | **AlQuran.cloud** | `api.alquran.cloud/v1/` | Quran text in 90+ translations |
+| **fawazahmed0/hadith-api** | `cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/` | Sahih hadith corpus — `quran hadith` command + AI guide |
 | **ip-api.com** | `ip-api.com/json/` | Auto location detection |
-| **fawazahmed0/hadith-api** | `cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/` | Sahih hadith corpus |
 | **ntfy.sh** | `ntfy.sh/{topic}` | Free phone push notifications |
+| **Telegram Bot API** | `api.telegram.org/bot{token}/` | Prayer reminders + Quran bot (free, no rate limits for bots) |
+| **Nominatim (OpenStreetMap)** | `nominatim.openstreetmap.org/search` | City name → lat/lon for Telegram bot `/setlocation` |
 
 ---
 
 ## Install Commands
 
 ```bash
-# Minimal (reading, prayer times, schedule, Ramadan, Eid)
+# Minimal (reading, prayer times, schedule, Ramadan, Eid, Hadith)
 pip install quran-cli
+# macOS: pip3 install quran-cli
 
 # With AI guide
 pip install "quran-cli[ai]"
 
-# With all connectors (Telegram, WhatsApp)
+# With Telegram bot + WhatsApp notifications
 pip install "quran-cli[connectors]"
 
 # Full installation (everything)
@@ -184,10 +196,10 @@ pip install "quran-cli[dev]"
 | Platform | Notes |
 |---|---|
 | **Linux** | Full support. Daemon uses systemd-compatible double-fork. Desktop notifications via libnotify. |
-| **macOS** | Full support. Daemon uses `os.fork()`. Desktop notifications via osascript. |
-| **Windows** | Full support. Daemon runs inline (no fork). Desktop notifications via Windows Toast API via plyer. |
-| **Termux (Android)** | Partial — prayer times, reading, Ramadan all work. No desktop notifications. |
-| **Docker** | Prayer times + reading work. No desktop notifications. Phone push (ntfy.sh) works. |
+| **macOS** | Full support. Use `pip3` not `pip`. Daemon uses `os.fork()`. Desktop notifications via osascript. |
+| **Windows** | Full support. Use `py -m pip install`. Daemon runs inline (no fork). Desktop notifications via Windows Toast via plyer. |
+| **Termux (Android)** | Partial — prayer times, reading, Ramadan, Hadith all work. No desktop notifications. |
+| **Docker** | Prayer times + reading + Hadith work. Telegram bot works. No desktop notifications. |
 
 ---
 
@@ -195,10 +207,11 @@ pip install "quran-cli[dev]"
 
 | Item | Size |
 |---|---|
-| Package itself | ~350 KB |
+| Package itself | ~380 KB |
 | Quran SQLite cache (all surahs, 1 language) | ~3 MB |
 | Quran SQLite cache (all surahs, all 13 languages) | ~35 MB |
 | RAG corpus (SQLite, Quran + Hadith) | ~2 MB |
+| Bot subscriber data | <10 KB |
 | Config + state files | <50 KB |
 
 ---
@@ -210,12 +223,12 @@ pip install "quran-cli[dev]"
 | Reading (after first fetch) | Offline ✓ |
 | Prayer times | Offline ✓ (pure calculation) |
 | Schedule / Ramadan / Eid | Offline ✓ |
+| Hadith (after first fetch) | Offline ✓ (cached in rag.db) |
 | First-time surah fetch | Online (AlQuran.cloud) |
-| Quran search (live) | Online (AlQuran.cloud) |
 | Quran search (cached) | Offline ✓ |
-| RAG corpus seeding | Online (first run only) |
 | AI guide answers | Online (ANTHROPIC_API_KEY) |
 | Auto location detect | Online (ip-api.com) |
+| Hadith fetch | Online (fawazahmed0/hadith-api CDN) |
 | ntfy.sh notifications | Online (push only) |
-| Telegram/WhatsApp | Online |
+| Telegram / Telegram bot | Online |
 | News | Online (RSS feeds) |

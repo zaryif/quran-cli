@@ -117,29 +117,6 @@ pip install "quran-cli[all]"         # Everything
 # macOS: replace pip → pip3 in all commands above
 ```
 
-### **Running Locally (Alternative / Manual)**
-If `pip install -e .` fails due to network or build issues, you can run the CLI directly from the source.
-
-#### **macOS & Linux**
-```bash
-export PYTHONPATH=.
-python3 -m quran gui    # or any other command
-```
-
-#### **Windows (PowerShell)**
-```powershell
-$env:PYTHONPATH="."
-$env:PYTHONIOENCODING="utf-8"
-python -m quran gui
-```
-
-#### **Windows (Command Prompt)**
-```cmd
-set PYTHONPATH=.
-set PYTHONIOENCODING=utf-8
-python -m quran gui
-```
-
 ---
 
 ## Quick Start
@@ -412,6 +389,7 @@ All data is fetched from free, open, authenticated sources — no mock data anyw
 |---|---|---|
 | **AlQuran.cloud** | All Quran text (90+ editions) | `api.alquran.cloud/v1/` |
 | **fawazahmed0/hadith-api** | Authentic hadith corpus | `cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/` |
+| **News RSS Feeds** | Al Jazeera, SeekersGuidance, 5Pillars, IslamQA | Live RSS Feeds |
 | **ip-api.com** | Auto location detection | `ip-api.com/json/` |
 | **ntfy.sh** | Free phone push | `ntfy.sh/{topic}` |
 
