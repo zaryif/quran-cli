@@ -348,9 +348,17 @@ async def _run_bot(token: str) -> None:
                 subs = _load_subscribers()
                 if chat_id not in subs:
                     subs[chat_id] = {}
+                import httpx
+                try:
+                    r_tz = httpx.get(f"https://timeapi.io/api/TimeZone/coordinate?latitude={lat}&longitude={lon}", timeout=5.0)
+                    tz_data = r_tz.json()
+                    tz = tz_data.get("timeZone")
+                except Exception:
+                    tz = "UTC"
+
                 subs[chat_id].update({
                     "lat": lat, "lon": lon,
-                    "city": name, "tz": "UTC"
+                    "city": name, "tz": tz
                 })
                 _save_subscribers(subs)
                 await update.message.reply_text(
@@ -427,12 +435,14 @@ async def _run_bot(token: str) -> None:
                     ("Maghrib", pt.maghrib),
                     ("Isha",    pt.isha),
                 ]:
+                    async def _job_telegram_prayer(cid: str, n: str, ci: str) -> None:
+                        await app_obj.bot.send_message(cid, f"🕌 *{n}* — {ci}", parse_mode="Markdown")
+
                     if dt > now:
                         scheduler.add_job(
-                            lambda c=chat_id, n=name, ci=city: asyncio.create_task(
-                                _send(c, f"🕌 *{n}* — {ci}")
-                            ),
+                            _job_telegram_prayer,
                             "date", run_date=dt,
+                            args=[chat_id, name, city],
                             id=f"prayer_{chat_id}_{name}",
                             replace_existing=True,
                             misfire_grace_time=300,
@@ -444,32 +454,38 @@ async def _run_bot(token: str) -> None:
                     rd    = ramadan_day()
 
                     sehri_warn = sehri - timedelta(minutes=15)
+                    async def _job_telegram_sehri_warning(cid: str) -> None:
+                        await app_obj.bot.send_message(cid, "☽ *Sehri ending in 15 minutes.* Eat and make intention.", parse_mode="Markdown")
+
                     if sehri_warn > now:
                         scheduler.add_job(
-                            lambda c=chat_id: asyncio.create_task(
-                                _send(c, "☽ *Sehri ending in 15 minutes.* Eat and make intention.")
-                            ),
+                            _job_telegram_sehri_warning,
                             "date", run_date=sehri_warn,
+                            args=[chat_id],
                             id=f"sehri_{chat_id}", replace_existing=True,
                             misfire_grace_time=300,
                         )
 
+                    async def _job_telegram_iftar(cid: str) -> None:
+                        await app_obj.bot.send_message(cid, "☽ *Iftar time — Alhamdulillah!* Break your fast.", parse_mode="Markdown")
+
                     if pt.maghrib > now:
                         scheduler.add_job(
-                            lambda c=chat_id: asyncio.create_task(
-                                _send(c, "☽ *Iftar time — Alhamdulillah!* Break your fast.")
-                            ),
+                            _job_telegram_iftar,
                             "date", run_date=pt.maghrib,
+                            args=[chat_id],
                             id=f"iftar_{chat_id}", replace_existing=True,
                             misfire_grace_time=300,
                         )
 
+                    async def _job_telegram_laylatul_qadr(cid: str, r: int) -> None:
+                        await app_obj.bot.send_message(cid, f"✨ *Laylatul Qadr — Night {r}*\n_Increase your worship tonight._", parse_mode="Markdown")
+
                     if rd and rd in LAYLATUL_QADR_NIGHTS and pt.isha > now:
                         scheduler.add_job(
-                            lambda c=chat_id, r=rd: asyncio.create_task(
-                                _send(c, f"✨ *Laylatul Qadr — Night {r}*\n_Increase your worship tonight._")
-                            ),
+                            _job_telegram_laylatul_qadr,
                             "date", run_date=pt.isha,
+                            args=[chat_id, rd],
                             id=f"laylatul_{chat_id}", replace_existing=True,
                         )
 
@@ -479,13 +495,15 @@ async def _run_bot(token: str) -> None:
         # Daily ayah at 7 AM
         morning = now.replace(hour=7, minute=0, second=0, microsecond=0)
         if morning > now:
+            async def _job_telegram_ayah(cid: str) -> None:
+                await app_obj.bot.send_message(cid, _get_ayah_message(), parse_mode="Markdown")
+
             for chat_id, sub in subs.items():
                 if sub.get("enabled", True):
                     scheduler.add_job(
-                        lambda c=chat_id: asyncio.create_task(
-                            _send(c, _get_ayah_message())
-                        ),
+                        _job_telegram_ayah,
                         "date", run_date=morning,
+                        args=[chat_id],
                         id=f"ayah_{chat_id}", replace_existing=True,
                     )
 

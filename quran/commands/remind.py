@@ -206,5 +206,6 @@ def remind_test():
     city = cfg.get("location", {}).get("city", "your city")
     
     console.print("[dim]Sending test notification to all enabled channels…[/dim]")
-    dispatch("🕌 quran-cli Test", f"This is a test reminder from your terminal. Location: {city}")
+    topic = cfg["remind"].get("phone_topic", "")
+    dispatch("🕌 quran-cli Test", f"This is a test reminder from your terminal. Location: {city}", topic=topic)
     console.print("[green]✓[/green] Test notification dispatched.")

@@ -318,6 +318,10 @@ quran connect ntfy           # generates ntfy.sh topic + QR code
 
 ### All channels
 
+**Improvements:**
+- **Telegram Bot Timezone**: The Telegram bot now accurately determines your timezone based on your location, ensuring precise prayer times.
+- **Ntfy.sh Test**: The `quran remind test` command now correctly dispatches test notifications to your configured ntfy.sh channel.
+
 ```bash
 quran connect list           # all channels + status
 quran connect telegram       # Telegram bot (free, 30-second setup)
