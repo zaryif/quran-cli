@@ -14,7 +14,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org)
-[![PyPI](https://img.shields.io/badge/PyPI-quran--cli-orange.svg)](https://pypi.org/project/quran-cli)
 
 </div>
 
@@ -84,36 +83,22 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 
 ---
 
-## Installation
-
-Requires **Python 3.9+**.
-
-### **⭐ Recommended Installation (Stable v1.1.7)**
-To get the most stable, trusted version of the CLI without experimental UI changes, run this exact command:
+### **⭐ Recommended Installation (Stable v1.2.6)**
+To get the latest version with all features, clone and install from source:
 
 ```bash
-python3 -m pip install git+https://github.com/zaryif/quran-cli.git@v1.1.7
-```
-
-```bash
-# Verify
-quran --version
-```
-
-```bash
-# From source
 git clone https://github.com/zaryif/quran-cli.git
 cd quran-cli
-git checkout v1.1.7
 pip install -e .          # pip3 install -e . on macOS
+quran
 ```
 
 ### Optional extras
 
 ```bash
-pip install "quran-cli[ai]"          # AI guide (requires ANTHROPIC_API_KEY)
-pip install "quran-cli[connectors]"  # Telegram + WhatsApp
-pip install "quran-cli[all]"         # Everything
+pip install -e ".[ai]"          # AI guide (requires ANTHROPIC_API_KEY)
+pip install -e ".[connectors]"  # Telegram + WhatsApp
+pip install -e ".[all]"         # Everything
 # macOS: replace pip → pip3 in all commands above
 ```
 
