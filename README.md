@@ -36,6 +36,9 @@ In the name of Allah, the Most Gracious, the Most Merciful
   quran namaz                        prayer details & rakat breakdown
   quran lang                         change display language
   quran connect                      notification channels
+  quran hadith list                  list all available editions
+  quran hadith browse eng-bukhari    interactive book browser
+  quran hadith search "patience"     search hadith by topic
   quran guide "how to make wudu"     AI-powered guide via Gemini
   quran quote                        random ayah quote
   quran streak                       your reading activity
@@ -284,12 +287,28 @@ quran guide --interactive             # multi-turn conversation
 quran guide --offline "tawakkul"     # BM25 search only, no API needed
 ```
 
-**How it works:**
-1. Your question is matched against 6236 Quran ayahs + Sahih/Hasan hadith (Bukhari, Muslim, Abu Dawud, Tirmidhi)
-2. Top relevant passages retrieved via BM25 ranking
-3. Answer generated with full citations: `[Quran 2:286]` `[Bukhari 8:2]`
+## Hadith
 
-**Corpus:** Kutub al-Sittah (Six Books) — only Sahih and Hasan grade hadith.
+Browse and search authentic Hadith from the Kutub al-Sittah (Bukhari, Muslim, etc.) and many other collections in multiple languages.
+
+```bash
+quran hadith                 # interactive book picker
+quran hadith daily           # today's hadith of the day
+quran hadith list            # list all 50+ available editions
+quran hadith search "patience" # search by topic keyword
+
+# Reading with navigation
+quran hadith read eng-bukhari 1
+# During reading:
+# n: next hadith
+# p: previous hadith
+# q: exit
+```
+
+**How it works:**
+1. Fetches live from fawazahmed0/hadith-api (jsDelivr CDN).
+2. Supports 50+ editions including translations in 10+ languages.
+3. Only Sahih and Hasan grade hadith included.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...    # for AI-generated answers

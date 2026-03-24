@@ -88,11 +88,11 @@ def _main_menu_loop(TerminalMenu):
             "  Ramadan Guide",
             "  Prayer Details",
             "  Eid Guide",
-            # "  Browse Hadith",
-            # "  Muslim World News",
+            "  Browse Hadith",
+            "  Muslim World News",
             "  Reading Streak",
-            # "  Bookmarks",
-            # "  Change Language",
+            "  Bookmarks",
+            "  Change Language",
             "  Notification Channels",
             "  AI Guide",
             "  All Commands",
@@ -128,11 +128,11 @@ def _main_menu_loop(TerminalMenu):
             lambda: _run("quran ramadan"),                    # Ramadan Guide
             lambda: _run("quran namaz"),                      # Prayer Details
             lambda: _run("quran eid"),                        # Eid Guide
-            # lambda: _hadith_submenu(TerminalMenu),            # Browse Hadith
-            # lambda: _news_submenu(TerminalMenu),              # Muslim World News
+            lambda: _hadith_submenu(TerminalMenu),            # Browse Hadith
+            lambda: _news_submenu(TerminalMenu),              # Muslim World News
             lambda: _run("quran streak"),                     # Reading Streak
-            # lambda: _run("quran bookmark"),                   # Bookmarks
-            # lambda: _run("quran lang"),                       # Change Language
+            lambda: _run("quran bookmark"),                   # Bookmarks
+            lambda: _run("quran lang"),                       # Change Language
             lambda: _run("quran connect"),                    # Notification Channels
             lambda: _run("quran guide"),                      # AI Guide
             lambda: _show_commands_ref(),                     # All Commands
