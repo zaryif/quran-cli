@@ -231,6 +231,25 @@ def hadith_daily():
     console.print(Rule("[bold]Hadith of the Day[/bold]", style="bright_black"))
     _render(h)
 
+    console.print("  [dim]Press 's' to save a bookmark, or any other key to exit.[/dim]")
+    try:
+        console.print("  > ", end="")
+        key = input().strip().lower()
+        if key == "s":
+            console.print("  [dim]Enter a name for this bookmark:[/dim]")
+            console.print("  > ", end="")
+            label = input().strip()
+            if label:
+                from quran.core.bookmark_store import save_bookmark
+                col = edition.split("-")[-1] if "-" in edition else edition
+                h_num = h.get("hadithnumber", num)
+                save_bookmark(label, b_type="hadith", collection=col, book="1", number=h_num)
+                console.print(f"  [green]✓ Saved bookmark: '{label}'[/green]\n")
+                import time; time.sleep(0.5)
+    except (KeyboardInterrupt, EOFError):
+        pass
+
+
 
 @app.command("list")
 def hadith_list():

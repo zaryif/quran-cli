@@ -31,3 +31,20 @@ def show_quote() -> None:
         )
     )
     console.print()
+    
+    console.print("  [dim]Press 's' to save a bookmark, or any other key to exit.[/dim]")
+    try:
+        console.print("  > ", end="")
+        key = input().strip().lower()
+        if key == "s":
+            console.print("  [dim]Enter a name for this bookmark:[/dim]")
+            console.print("  > ", end="")
+            label = input().strip()
+            if label:
+                from quran.core.bookmark_store import save_bookmark
+                save_bookmark(label, b_type="quran", surah=ayah["surah"], ayah=ayah["ayah"])
+                console.print(f"  [green]✓ Saved bookmark: '{label}'[/green]\n")
+                import time; time.sleep(0.5)
+    except (KeyboardInterrupt, EOFError):
+        pass
+
