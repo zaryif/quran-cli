@@ -27,6 +27,82 @@ def remind_cmd(ctx: typer.Context):
         remind_status()
 
 
+@app.command("setup")
+def remind_setup():
+    """Interactive wizard to configure all reminders (Prayers & Fasting)."""
+    from quran.config.settings import load, save
+    from rich.prompt import Confirm, IntPrompt
+    import time
+    
+    cfg = load()
+    
+    console.print()
+    console.print(Rule("[bold green]Reminder Setup Wizard[/bold green]"))
+    console.print("  [dim]Let's configure your daily prayer and fasting notifications.[/dim]\n")
+    
+    # ── 1. Daily Prayers ──
+    if Confirm.ask("  [1] Do you want [bold]5-times daily prayer[/bold] reminders?"):
+        cfg["remind"]["fajr"] = True
+        cfg["remind"]["dhuhr"] = True
+        cfg["remind"]["asr"] = True
+        cfg["remind"]["maghrib"] = True
+        cfg["remind"]["isha"] = True
+        
+        console.print("  [dim]How many minutes before the Azan should we notify you?[/dim]")
+        adv = IntPrompt.ask("  [dim]>[/dim] Advance warning minutes", default=cfg["remind"].get("advance_min", 10))
+        cfg["remind"]["advance_min"] = adv
+        
+        adhan = Confirm.ask("  [dim]>[/dim] Play short Adhan sound on desktop notifications?", default=cfg["remind"].get("adhan_sound", True))
+        cfg["remind"]["adhan_sound"] = adhan
+    else:
+        for p in ["fajr", "dhuhr", "asr", "maghrib", "isha"]:
+            cfg["remind"][p] = False
+
+    console.print()
+    
+    # ── 2. Fasting Alerts ──
+    if Confirm.ask("  [2] Do you want [bold]Daily Fasting (Sahur/Iftar)[/bold] alerts?"):
+        sehri = Confirm.ask("  [dim]>[/dim] Enable Sahur (Sehri) countdown?", default=True)
+        cfg["remind"]["fasting_sehri"] = sehri
+        if sehri:
+            s_min = IntPrompt.ask("     How many minutes before Sahur ends?", default=cfg["remind"].get("fasting_sehri_min", 30))
+            cfg["remind"]["fasting_sehri_min"] = s_min
+            
+        iftar = Confirm.ask("  [dim]>[/dim] Enable Iftar alerts?", default=True)
+        cfg["remind"]["fasting_iftar"] = iftar
+        if iftar:
+            i_min = IntPrompt.ask("     How many minutes before Iftar?", default=cfg["remind"].get("fasting_iftar_min", 10))
+            cfg["remind"]["fasting_iftar_min"] = i_min
+    else:
+        cfg["remind"]["fasting_sehri"] = False
+        cfg["remind"]["fasting_iftar"] = False
+
+    save(cfg)
+    console.print()
+    console.print("  [green]✓ Settings saved![/green]")
+    
+    # ── 3. Start Daemon ──
+    if Confirm.ask("\n  [3] Start the background reminder daemon now?", default=True):
+        console.print()
+        remind_on()
+        
+    # ── 4. Link Phone ──
+    console.print()
+    if Confirm.ask("  [4] Would you like to link your phone for cross-device notifications?", default=False):
+        remind_phone()
+    else:
+        topic = cfg["remind"].get("phone_topic", "")
+        if topic:
+            console.print(f"  [dim]Phone already linked to ntfy.sh/{topic}[/dim]")
+        else:
+            console.print("  [dim]You can always link later using `quran remind phone`.[/dim]")
+    
+    console.print()
+    console.print(Rule("[bold green]Setup Complete[/bold green]"))
+    console.print()
+
+
+
 @app.command("on")
 def remind_on():
     """Start the background reminder daemon."""

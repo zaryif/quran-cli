@@ -4,8 +4,10 @@
 
 **quran-cli** was built by **Md Zarif Azfar** — a developer and Muslim from Bangladesh.
 
-The project grew out of a simple frustration: too many beautiful Quran apps exist for phones, but the terminal — where developers spend most of their day — has nothing. No prayer reminders in your workflow. No Quran verse when you open a new shell. No quick way to check sehri time without pulling out your phone.
-
+The project grew out of a simple frustration: too many beautiful Quran apps exist for phones, but the terminal — where developers spend most of their day — has nothing.
+- 🕌 **Prayer Reminders & Daemon:** Background notifications for 5 daily prayers with an interactive setup wizard (`quran remind setup`).
+- 🌙 **Ramadan & Fasting Alerts:** Automatic alerts for Sahur and Iftar timings, usable year-round.
+- 📱 **Cross-platform Push:** Native macOS/Windows/Linux popups + Telegram & phone (ntfy) integration.
 So I built quran-cli to fill that gap.
 
 ---

@@ -175,32 +175,37 @@ def _schedule_today(cfg: dict) -> None:
                 _add(f"{p_id}_warn", p_time - timedelta(minutes=advance_m),
                      _job_prayer, [f"{p_name} (in {advance_m}m)", city, topic])
 
-        # ── Ramadan-specific notifications ───────────────────────────────────
-        if ramadan:
+        # ── Fasting & Ramadan notifications ──────────────────────────────────
+        remind = cfg.get("remind", {})
+        f_sehri = remind.get("fasting_sehri", False)
+        f_iftar = remind.get("fasting_iftar", False)
+
+        if ramadan or f_sehri or f_iftar:
             sehri_end = sehri_time(pt)
             iftar     = iftar_time(pt)
             iftar_str = iftar.strftime("%I:%M %p")
 
-            sehri_min = cfg.get("ramadan", {}).get("notify_sehri_min", 15)
-            iftar_min = cfg.get("ramadan", {}).get("notify_iftar_min", 15)
+            s_min = cfg.get("ramadan", {}).get("notify_sehri_min", 15) if ramadan else remind.get("fasting_sehri_min", 30)
+            i_min = cfg.get("ramadan", {}).get("notify_iftar_min", 15) if ramadan else remind.get("fasting_iftar_min", 10)
 
-            _add("sehri_warn", sehri_end - timedelta(minutes=sehri_min),
-                 _job_sehri_warning, [sehri_min, city, topic])
+            if ramadan or f_sehri:
+                _add("sehri_warn", sehri_end - timedelta(minutes=s_min),
+                     _job_sehri_warning, [s_min, city, topic])
 
-            _add("iftar_warn", iftar - timedelta(minutes=iftar_min),
-                 _job_iftar_warning, [iftar_min, city, topic, iftar_str])
-
-            _add("iftar", iftar,
-                 _job_iftar, [city, topic])
+            if ramadan or f_iftar:
+                _add("iftar_warn", iftar - timedelta(minutes=i_min),
+                     _job_iftar_warning, [i_min, city, topic, iftar_str])
+                _add("iftar", iftar,
+                     _job_iftar, [city, topic])
 
             # Laylatul Qadr alert (Isha time on odd nights 21-29)
-            rd = ramadan_day()
-            if rd and rd in LAYLATUL_QADR_NIGHTS:
-                _add("laylatul_qadr", pt.isha,
-                     _job_laylatul_qadr, [rd, topic])
+            if ramadan:
+                rd = ramadan_day()
+                if rd and rd in LAYLATUL_QADR_NIGHTS:
+                    _add("laylatul_qadr", pt.isha,
+                         _job_laylatul_qadr, [rd, topic])
 
         # ── Daily reading goal reminder ───────────────────────────────────────
-        remind    = cfg.get("remind", {})
         goal_time = remind.get("goal_time", "20:00")
         goal_n    = remind.get("goal_ayahs", 5)
         try:

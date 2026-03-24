@@ -40,7 +40,8 @@ COMMANDS_REF = [
     ("quran news",                   "Muslim world headlines"),
     ("quran lang",                   "Change display language"),
     ("quran connect",                "Notification channels"),
-    ("quran remind on",              "Enable prayer reminders"),
+    ("quran remind setup",           "Interactive reminder & fasting wizard"),
+    ("quran remind on",              "Enable prayer reminders (daemon)"),
     ("quran guide \"...\"",            "AI Quran & Hadith guide"),
     ("quran quote",                  "Daily ayah"),
     ("quran streak",                 "Reading & fasting streaks"),
@@ -95,6 +96,7 @@ def _main_menu_loop(TerminalMenu):
             "  Muslim World News",
             "  Reading Streak",
             "  Bookmarks",
+            "  Reminder Setup Wizard",
             "  Change Language",
             "  Notification Channels",
             "  All Commands",
@@ -136,6 +138,7 @@ def _main_menu_loop(TerminalMenu):
             lambda: _news_submenu(TerminalMenu),              # Muslim World News
             lambda: _run("quran streak"),                     # Reading Streak
             lambda: _run("quran bookmark"),                   # Bookmarks
+            lambda: _run("quran remind setup"),               # Reminder Setup Wizard
             lambda: _run("quran lang"),                       # Change Language
             lambda: _run("quran connect"),                    # Notification Channels
             lambda: _show_commands_ref(),                     # All Commands
