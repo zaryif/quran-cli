@@ -2,9 +2,10 @@
 quran bot — run the Telegram prayer reminder bot.
 
 The bot sends prayer reminders, ayah of the day, Ramadan timings,
-and responds to Quran/Hadith queries on Telegram — all free via
-the official Telegram Bot API.
+and responds to Quran/Hadith queries on Telegram.
 
+To run 24/7 for free in the cloud (so your laptop can stay off),
+see `docs/CLOUD_BOT.md` for a 2-minute 1-click deployment guide!
 Usage:
   quran bot start       # start the bot (blocking)
   quran bot status      # check if configured
@@ -42,6 +43,7 @@ def bot_start(
     console.print(Rule("[dim]quran-cli Telegram Bot[/dim]", style="green"))
     console.print()
     console.print("  [dim]Starting Telegram bot…[/dim]")
+    console.print("  [dim]Tip: To run this 24/7 in the cloud for free, read `docs/CLOUD_BOT.md`[/dim]\n")
     console.print("  [dim]Press Ctrl+C to stop.[/dim]\n")
 
     run(token=token or None)
