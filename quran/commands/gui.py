@@ -84,6 +84,7 @@ def _main_menu_loop(TerminalMenu):
             "  Browse Hadith",
             "  Read Quran with Translation",
             "  Daily Prayer Schedule",
+            "  Fasting Times",
             "  Search",
             "  Ramadan Guide",
             "  Prayer Details",
@@ -124,6 +125,7 @@ def _main_menu_loop(TerminalMenu):
             lambda: _hadith_submenu(TerminalMenu),            # Browse Hadith
             lambda: _read_with_translation_flow(TerminalMenu),# Read with Translation
             lambda: _run("quran schedule"),                   # Daily Prayer Schedule
+            lambda: _run("quran fasting"),                    # Fasting Times
             lambda: _search_prompt(),                         # Search
             lambda: _run("quran ramadan"),                    # Ramadan Guide
             lambda: _run("quran namaz"),                      # Prayer Details

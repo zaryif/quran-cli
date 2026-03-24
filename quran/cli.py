@@ -16,7 +16,7 @@ from quran.commands import (
     read, search, pray, remind, ramadan, eid, news,
     bookmark, tafsir, config as cfg_cmd, schedule, quote,
     streak, guide, connect, namaz, lang, gui, update, cache,
-    hadith, bot,
+    hadith, bot, fasting,
 )
 app.add_typer(read.app,     name="read",     help="Read Quran by surah or ayah.")
 app.add_typer(search.app,   name="search",   help="Search across the Quran.")
@@ -37,6 +37,7 @@ app.add_typer(connect.app,  name="connect",  help="Notification channels.")
 app.add_typer(update.app,   name="update",   help="Update quran-cli to the latest version.")
 app.add_typer(cache.app,    name="cache",    help="Download Quran for offline use.")
 app.add_typer(bot.app,      name="bot",      help="Telegram prayer reminder bot.")
+app.add_typer(fasting.app,  name="fasting",  help="Daily fasting times — Sahur, Iftar & Sunnah days.")
 
 @app.command("browse")
 def browse_cmd(
