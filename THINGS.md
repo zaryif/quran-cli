@@ -131,37 +131,31 @@ The location is stored in `~/.config/quran-cli/config.toml` after first detectio
 Repository: https://github.com/fawazahmed0/hadith-api
 CDN:        https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/
 License:    Open, free, no API key
-Collections: Sahih Bukhari, Sahih Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah
+Collections: 50+ editions including Kutub al-Sittah (Bukhari, Muslim, etc.)
 ```
 
-This is the **Kutub al-Sittah** (Six Books) — the most authentic hadith collections in Sunni Islam. All hadith used are from these collections.
+This includes the **Kutub al-Sittah** (Six Books) plus many other collections in multiple languages (English, Arabic, Urdu, Bengali, etc.).
 
 ### How hadith is fetched
 ```python
-# Fetch Sahih Bukhari, Book 1, Hadith 1
-url = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-bukhari/1/1.json"
+# 1. Fetch all editions
+GET https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions.json
 
-# Response:
-{
-  "hadiths": [{
-    "number": 1,
-    "arab": "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ...",
-    "text": "Actions are judged by intentions..."
-  }],
-  "metadata": { "name": "Sahih al-Bukhari", "section": {...} }
-}
+# 2. Fetch sections for an edition
+GET https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/{editionName}.json
+
+# 3. Fetch a specific Hadith
+GET https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/{editionName}/{number}.json
 ```
 
 ### Authenticity
-Only **Sahih** (authentic) and **Hasan** (good) grade hadith are included:
+Only **Sahih** (authentic) and **Hasan** (good) grade hadith are included in the primary collections:
 - Sahih Bukhari — universally agreed as most authentic Sunni hadith collection
 - Sahih Muslim — second most authentic
-- Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah — graded by Islamic scholars (selected Sahih/Hasan hadith only)
-
-No Da'if (weak) or fabricated hadith are in the corpus.
+- Other major collections (Abu Dawud, Tirmidhi, etc.) are filtered for authentic narrations.
 
 ### Storage
-Fetched hadith are stored in `~/.local/share/quran-cli/rag.db` (SQLite) on first use.
+Fetched hadith are currently fetched live via jsDelivr CDN for the latest data, with plans for a local SQLite cache similar to the Quran engine.
 
 ---
 

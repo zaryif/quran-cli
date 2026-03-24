@@ -119,24 +119,25 @@ Source: Ibn Kathir (brief) via AlQuran.cloud API. Requires internet.
 
 ---
 
-## quran hadith  *(new in v1.2.6)*
+## quran hadith
 
-Browse and search authentic Hadith from the Kutub al-Sittah.
-All data from fawazahmed0/hadith-api (free CDN, no API key).
-Only Sahih and Hasan grade hadith.
+Browse and search authentic Hadith from the Kutub al-Sittah and many other collections.
 
 ```bash
-quran hadith                        # interactive topic picker
-quran hadith daily                  # today's hadith of the day (rotates daily)
-quran hadith topics                 # list all 19 topic categories
+quran hadith                        # interactive collection and section picker
+quran hadith daily                  # today's hadith of the day
+quran hadith list                   # list all 50+ available editions
+quran hadith browse eng-bukhari     # interactive section browser for an edition
+quran hadith read eng-bukhari 1     # read a specific hadith with n/p/q navigation
 quran hadith search "patience"      # search by topic keyword
-quran hadith search "tawakkul"      # search for reliance on Allah
-quran hadith read bukhari 1 1       # read a specific hadith
-quran hadith read muslim 6 38       # Sahih Muslim on patience
-quran hadith read tirmidhi 27 1     # Jami at-Tirmidhi on tawakkul
 ```
 
-**Available topic categories:**
+**During reading:**
+- `n`: Load the **next** Hadith.
+- `p`: Load the **previous** Hadith.
+- `q`: **Exit** navigation.
+
+**Available topic categories (curated search):**
 `intention` · `prayer` · `fasting` · `quran` · `pillars` · `friday` ·
 `laylatul-qadr` · `parents` · `consistency` · `kindness` · `patience` ·
 `charity` · `brotherhood` · `dua` · `wudu` · `dhikr` · `tawakkul` ·
