@@ -1,5 +1,5 @@
 # quran-cli Command Reference
-> Complete guide to every command, flag, and option. v1.2.6
+> Complete guide to every command, flag, and option. v1.2.7
 
 ---
 

@@ -4,7 +4,7 @@ Interactive GUI dashboard for quran-cli.
 Provides a looping, arrow-key navigable terminal dashboard with sub-menus
 for reading, commands reference, and all major features.
 
-v1.2.6: Added Eid Guide, Browse Hadith, Muslim World News, Reading Streak,
+v1.2.7: Added Eid Guide, Browse Hadith, Muslim World News, Reading Streak,
         Bookmarks to the main menu. All existing code preserved unchanged.
 """
 from __future__ import annotations

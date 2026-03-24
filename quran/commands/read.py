@@ -1,7 +1,7 @@
 """
 quran read — read any surah or ayah with Arabic + translation.
 
-FIX v1.2.6:
+FIX v1.2.7:
   - _interactive_read: fixed broken search call. The previous code imported
     and called search_cmd(query) directly, which fails because Typer command
     callbacks require a Context object as the first argument. Fixed by using

@@ -86,7 +86,7 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 
 ---
 
-### **⭐ Recommended Installation (Stable v1.2.6)**
+### **⭐ Recommended Installation (Stable v1.2.7)**
 To get the latest version with all features, clone and install from source:
 
 ```bash

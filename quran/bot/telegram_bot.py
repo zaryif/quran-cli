@@ -337,7 +337,7 @@ async def _run_bot(token: str) -> None:
                 f"http://nominatim.openstreetmap.org/search"
                 f"?q={args}&format=json&limit=1",
                 timeout=5.0,
-                headers={"User-Agent": "quran-cli/1.2.6"}
+                headers={"User-Agent": "quran-cli/1.2.7"}
             )
             results = r.json()
             if results:
