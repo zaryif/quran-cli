@@ -36,8 +36,10 @@ In the name of Allah, the Most Gracious, the Most Merciful
   quran namaz                        prayer details & rakat breakdown
   quran lang                         change display language
   quran connect                      notification channels
-  quran hadith list                  list all available editions
-  quran hadith browse eng-bukhari    interactive book browser
+  quran hadith                      interactive edition & book browser
+  quran hadith daily                today's hadith of the day
+  quran hadith browse <edition>      browse books within an edition
+  quran hadith read <edition> <num>  read specific hadith
   quran hadith search "patience"     search hadith by topic
   quran guide "how to make wudu"     AI-powered guide via Gemini
   quran quote                        random ayah quote
@@ -86,7 +88,7 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 
 ---
 
-### **⭐ Recommended Installation (Stable v1.2.7)**
+### **⭐ Recommended Installation (Stable v1.2.8)**
 To get the latest version with all features, clone and install from source:
 
 ```bash
@@ -292,17 +294,15 @@ quran guide --offline "tawakkul"     # BM25 search only, no API needed
 Browse and search authentic Hadith from the Kutub al-Sittah (Bukhari, Muslim, etc.) and many other collections in multiple languages.
 
 ```bash
-quran hadith                 # interactive book picker
+quran hadith                 # interactive edition & book browser
 quran hadith daily           # today's hadith of the day
-quran hadith list            # list all 50+ available editions
-quran hadith search "patience" # search by topic keyword
+quran hadith browse <edition> # browse books within an edition
+quran hadith read <edition> <num> # read specific hadith
 
-# Reading with navigation
-quran hadith read eng-bukhari 1
 # During reading:
-# n: next hadith
-# p: previous hadith
-# q: exit
+# n: next hadith in section
+# p: previous hadith in section
+# q: back to section list
 ```
 
 **How it works:**

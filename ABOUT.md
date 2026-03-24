@@ -41,7 +41,7 @@ quran-cli is the answer to all of those.
 
 **Offline-first.** Once you've fetched a surah, it lives in SQLite forever. Prayer times are pure computation — no network required. The tool works on a plane at 30,000 feet.
 
-**Authentic data only.** No scraped data. No AI-generated Islamic content. Every Quran verse comes from AlQuran.cloud. Every hadith comes from the Kutub al-Sittah (the Six Books) via the fawazahmed0/hadith-api project. If a source can't be cited, it doesn't go in.
+**Authentic data only.** No scraped data. No AI-generated Islamic content. Every Quran verse comes from AlQuran.cloud. Every hadith comes from the Kutub al-Sittah (the Six Books) via the fawazahmed0/hadith-api project, now featuring full structured book browsing.
 
 ---
 

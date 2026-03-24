@@ -5,11 +5,11 @@ All hadith fetched live from fawazahmed0/hadith-api (jsDelivr CDN, free, no key)
 Only Sahih and Hasan grade hadith — same authenticity standard as quran guide corpus.
 
 Usage:
-  quran hadith                         # interactive topic picker
+  quran hadith                         # interactive edition & book browser
   quran hadith daily                   # today's hadith of the day
-  quran hadith topics                  # list all topic categories
-  quran hadith search "patience"       # search by topic keyword
-  quran hadith read bukhari 1 1        # read a specific hadith
+  quran hadith browse <edition>        # browse books within an edition
+  quran hadith read <edition> <num>    # read a specific hadith
+  quran hadith search "patience"       # search by curated topics
 """
 from __future__ import annotations
 import typer
@@ -96,14 +96,25 @@ def _fetch_editions() -> dict:
         return {}
 
 def _fetch_sections(edition: str) -> dict:
-    """Fetch sections/books within an edition."""
+    """Fetch sections/books within an edition (metadata only)."""
     try:
         import httpx
-        url = f"https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/{edition}.json"
+        url = f"https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/{edition}/sections.json"
         r = httpx.get(url, timeout=10.0)
         return r.json()
     except Exception:
         return {}
+
+def _fetch_section_hadiths(edition: str, section: str) -> list[dict]:
+    """Fetch all hadiths within a specific section/book."""
+    try:
+        import httpx
+        url = f"https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/{edition}/sections/{section}.json"
+        r = httpx.get(url, timeout=10.0)
+        data = r.json()
+        return data.get("hadiths", [])
+    except Exception:
+        return []
 
 def _fetch_hadith(edition: str, number: int) -> Optional[dict]:
     """
@@ -119,13 +130,7 @@ def _fetch_hadith(edition: str, number: int) -> Optional[dict]:
         if not hadiths:
             return None
         h = hadiths[0]
-        return {
-            "text": h.get("text", "").strip(),
-            "arab": h.get("arab", ""),
-            "number": h.get("hadithnumber", number) or h.get("number", number),
-            "edition": edition,
-            "reference": f"{edition} #{number}",
-        }
+        return h # Return raw hadith dict from API
     except Exception:
         return None
 
@@ -137,16 +142,19 @@ def _render(h: dict, show_arabic: bool = True) -> None:
     from quran.core.quran_engine import format_arabic
 
     console.print()
+    # Handle reference variations from the API
+    ref = h.get("reference", f"#{h.get('hadithnumber', h.get('number', '?'))}")
+    
     console.print(Rule(
-        f"[yellow]◉ Hadith[/yellow]  [dim]{h['reference']}[/dim]",
+        f"[yellow]◉ Hadith[/yellow]  [dim]{ref}[/dim]",
         style="bright_black"
     ))
     console.print()
 
-    if show_arabic and h.get("arab"):
+    if show_arabic and h.get("arabic"):
         from rich.align import Align
         from rich.text import Text
-        shaped = format_arabic(h["arab"])
+        shaped = format_arabic(h["arabic"])
         console.print(Align.right(
             Text(shaped, style="bold yellow", justify="right"),
             width=console.width - 4
@@ -155,8 +163,7 @@ def _render(h: dict, show_arabic: bool = True) -> None:
 
     console.print(
         Panel(
-            f"[white]{h['text']}[/white]",
-            title=f"[dim]{h['edition']}[/dim]",
+            f"[white]{h.get('text', '')}[/white]",
             border_style="bright_black",
             padding=(1, 3),
         )
@@ -230,7 +237,7 @@ def hadith_browse(
 
 @app.command("read")
 def hadith_read(
-    edition: Annotated[str, typer.Argument(help="Edition/Collection ID (e.g. eng-bukhari)")] = "eng-bukhari",
+    edition: Annotated[str, typer.Argument(help="Edition ID (e.g. eng-bukhari)")] = "eng-bukhari",
     number: Annotated[int, typer.Argument(help="Hadith number")] = 1,
     no_arabic: Annotated[bool, typer.Option("--no-arabic", help="Hide Arabic text")] = False,
 ):
@@ -249,8 +256,6 @@ def hadith_read(
         console.print("  [dim]n: next · p: previous · q: exit[/dim]")
         console.print("  > ", end="")
         try:
-            from quran.commands.gui import _get_menu
-            TerminalMenu = _get_menu()
             key = input().strip().lower()
             if key == "n":
                 num += 1
@@ -273,9 +278,7 @@ def hadith_search(
     limit: Annotated[int, typer.Option("--limit", "-n")] = 5,
 ):
     """Search hadith by curated topic keyword."""
-    # This remains similar but simplified as the user wants focus on browsing
     console.print(f"\n  [dim]Searching for '[bold]{keyword}[/bold]'...[/dim]")
-    # Implementation can be improved later with a proper search API if available
     console.print("  [yellow]Note:[/yellow] For deep search, use [green]quran guide --hadith \"keyword\"[/green]\n")
 
 
@@ -289,23 +292,27 @@ def _interactive_picker() -> None:
     try:
         from simple_term_menu import TerminalMenu
         
-        with console.status("[dim]Loading editions…[/dim]"):
+        with console.status("[dim]Loading collections…[/dim]"):
             editions = _fetch_editions()
         
         if not editions:
             console.print("[red]✗[/red] Could not fetch editions.")
             return
 
-        # Filter for English and major languages
-        important_eds = {k: v for k, v in editions.items() if v.get("language", "").lower() in ["english", "arabic", "urdu", "bengali"]}
-        sorted_keys = sorted(important_eds.keys(), key=lambda k: (important_eds[k].get("language", ""), important_eds[k].get("name", "")))
-        
-        labels = [f"  {important_eds[k].get('name', k):<40} [dim]{important_eds[k].get('language', '')}[/dim]" for k in sorted_keys]
-        labels.insert(0, "  [bold underline]Daily Hadith[/bold underline]")
+        # Selection flow: Edition -> Section -> Hadiths
+        sorted_keys = sorted(editions.keys(), key=lambda k: (editions[k].get("language", ""), editions[k].get("name", "")))
+        labels = [f"  {editions[k].get('name', k):<40} [dim]{editions[k].get('language', '')}[/dim]" for k in sorted_keys]
+        labels.insert(0, "  [bold]Hadith of the Day[/bold]")
 
         console.print("  [dim]↑↓ navigate · Enter select · q back[/dim]\n")
 
-        menu = TerminalMenu(labels, title="  Select a Collection:")
+        menu = TerminalMenu(
+            labels, 
+            title="  Select a Collection:", 
+            menu_cursor_style=("fg_green", "bold"), 
+            menu_highlight_style=("fg_green", "bold"),
+            show_search_hint=True
+        )
         idx = menu.show()
 
         if idx is None: return
@@ -320,26 +327,74 @@ def _interactive_picker() -> None:
         console.print("  [red]simple-term-menu[/red] required for interactive browser.")
 
 def _browse_edition_sections(edition_key: str, TerminalMenu) -> None:
-    """Browse sections of an edition."""
-    with console.status(f"[dim]Loading sections for {edition_key}…[/dim]"):
-        sections = _fetch_sections(edition_key)
-    
-    if not sections:
-        console.print("[red]✗[/red] Could not load sections.")
+    """Browse books/sections within a collection."""
+    while True:
+        with console.status(f"[dim]Loading '{edition_key}' metadata…[/dim]"):
+            sections_data = _fetch_sections(edition_key)
+        
+        if not sections_data:
+            console.print("[red]✗[/red] Could not load collection metadata.")
+            return
+
+        sections = sections_data.get("sections", {})
+        if not sections:
+            hadith_read(edition_key, 1) # Fallback to sequential read
+            return
+
+        labels = []
+        sec_keys = sorted(sections.keys(), key=lambda k: int(k) if k.isdigit() else k)
+        for k in sec_keys:
+            name = sections[k] or "Untitled Section"
+            labels.append(f"  {k:>3}. {name}")
+
+        console.print()
+        menu = TerminalMenu(
+            labels, 
+            title=f"  {edition_key} Books:", 
+            menu_cursor_style=("fg_green", "bold"), 
+            menu_highlight_style=("fg_green", "bold"),
+            show_search_hint=True
+        )
+        idx = menu.show()
+
+        if idx is None: return
+        
+        selected_sec = sec_keys[idx]
+        _read_section_flow(edition_key, selected_sec, TerminalMenu)
+
+def _read_section_flow(edition: str, section_no: str, TerminalMenu) -> None:
+    """Read hadiths within a section with navigation."""
+    with console.status(f"[dim]Fetching Hadiths from section {section_no}…[/dim]"):
+        hadiths = _fetch_section_hadiths(edition, section_no)
+
+    if not hadiths:
+        console.print("[red]✗[/red] No hadiths found in this section.")
         return
 
-    sec_list = sections.get("sections", [])
-    if not sec_list:
-        # If no sections, just go straight to hadith 1
-        hadith_read(edition_key, 1)
-        return
+    curr_idx = 0
+    while 0 <= curr_idx < len(hadiths):
+        h = hadiths[curr_idx]
+        _render(h)
 
-    labels = [f"  Section {s.get('sectionNumber', i+1)}: {s.get('englishName', 'Untitled')}" for i, s in enumerate(sec_list)]
-    menu = TerminalMenu(labels, title=f"  {edition_key} Sections:")
-    idx = menu.show()
-
-    if idx is None: return
-    
-    # Simple navigation: start from the first hadith of that section
-    first_hadith = sec_list[idx].get("hadithStart", 1)
-    hadith_read(edition_key, first_hadith)
+        console.print(f"  [dim]Hadith {curr_idx + 1} of {len(hadiths)}[/dim]")
+        console.print("  [dim]n: next · p: previous · q: back to books[/dim]")
+        console.print("  > ", end="")
+        
+        try:
+            cmd = input().strip().lower()
+            if cmd == "n":
+                if curr_idx < len(hadiths) - 1:
+                    curr_idx += 1
+                else:
+                    console.print("  [yellow]End of book.[/yellow]")
+            elif cmd == "p":
+                if curr_idx > 0:
+                    curr_idx -= 1
+                else:
+                    console.print("  [yellow]Start of book.[/yellow]")
+            elif cmd == "q":
+                break
+            else:
+                pass
+        except (KeyboardInterrupt, EOFError):
+            break

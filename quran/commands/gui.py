@@ -4,8 +4,8 @@ Interactive GUI dashboard for quran-cli.
 Provides a looping, arrow-key navigable terminal dashboard with sub-menus
 for reading, commands reference, and all major features.
 
-v1.2.7: Added Eid Guide, Browse Hadith, Muslim World News, Reading Streak,
-        Bookmarks to the main menu. All existing code preserved unchanged.
+v1.2.8: Added structured Hadith browsing with book/section selection.
+        All existing code preserved unchanged.
 """
 from __future__ import annotations
 import sys
@@ -33,11 +33,10 @@ COMMANDS_REF = [
     ("quran ramadan",                "Sehri, Iftar & Tarawih times"),
     ("quran namaz",                  "Prayer details & rakat breakdown"),
     ("quran eid",                    "Eid guide + salah steps"),
-    ("quran hadith",                 "Browse authentic Hadith"),
+    ("quran hadith",                 "Interactive edition & book browser"),
     ("quran hadith daily",           "Hadith of the day"),
-    ("quran hadith search <topic>",  "Search hadith by topic"),
-    ("quran hadith topics",          "List all hadith topic categories"),
-    ("quran hadith read col bk num", "Read specific hadith"),
+    ("quran hadith browse <edition>", "Browse books within an edition"),
+    ("quran hadith read <ed> <num>",  "Read specific hadith"),
     ("quran news",                   "Muslim world headlines"),
     ("quran lang",                   "Change display language"),
     ("quran connect",                "Notification channels"),

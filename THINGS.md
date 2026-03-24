@@ -154,8 +154,13 @@ Only **Sahih** (authentic) and **Hasan** (good) grade hadith are included in the
 - Sahih Muslim — second most authentic
 - Other major collections (Abu Dawud, Tirmidhi, etc.) are filtered for authentic narrations.
 
-### Storage
-Fetched hadith are currently fetched live via jsDelivr CDN for the latest data, with plans for a local SQLite cache similar to the Quran engine.
+### Structured Browsing
+The `hadith` command now supports hierarchical browsing:
+1. **Edition/Collection** (e.g., Sahih Bukhari)
+2. **Section/Book** (e.g., Book of Revelation)
+3. **Hadiths** (Sequential reading with `n`/`p` navigation)
+
+Data is fetched live from JSDelivr CDN in a structured format, allowing full book traversal previously unavailable.
 
 ---
 
