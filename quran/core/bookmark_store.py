@@ -21,12 +21,15 @@ def _save(data: dict) -> None:
     BOOKMARK_FILE.write_text(json.dumps(data, indent=2))
 
 
-def save_bookmark(label: str, surah: int, ayah: int, note: str = "") -> None:
+def save_bookmark(label: str, b_type: str, note: str = "", **kwargs) -> None:
     data = _load()
-    data[label] = {
-        "surah": surah, "ayah": ayah, "note": note,
+    entry = {
+        "type": b_type,
+        "note": note,
         "saved_at": datetime.now().isoformat()
     }
+    entry.update(kwargs)
+    data[label] = entry
     _save(data)
 
 

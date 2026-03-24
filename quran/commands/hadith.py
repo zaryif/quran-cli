@@ -299,7 +299,7 @@ def hadith_read(
 
         _render(h, show_arabic=not no_arabic)
 
-        console.print("  [dim]n: next · p: previous · q: exit[/dim]")
+        console.print("  [dim]n: next · p: previous · s: save bookmark · q: exit[/dim]")
         console.print("  > ", end="")
         try:
             key = input().strip().lower()
@@ -307,6 +307,20 @@ def hadith_read(
                 num += 1
             elif key == "p":
                 num = max(1, num - 1)
+            elif key == "s":
+                console.print("\n  [dim]Enter a name for this bookmark:[/dim]")
+                console.print("  > ", end="")
+                try:
+                    label = input().strip()
+                    if label:
+                        from quran.core.bookmark_store import save_bookmark
+                        col = edition.split("-")[-1] if "-" in edition else edition
+                        save_bookmark(label, b_type="hadith", collection=col, book="1", number=num)
+                        console.print(f"  [green]✓ Saved bookmark: '{label}'[/green]\n")
+                        import time
+                        time.sleep(0.5)
+                except (KeyboardInterrupt, EOFError):
+                    pass
             elif key == "q":
                 break
             else:
@@ -517,7 +531,7 @@ def _read_section_flow(edition: str, section_no: str, section_name: str, coll_na
         console.print(f"  [dim]📖 {title} · Book {section_no}: {section_name}[/dim]")
         console.print(f"  [dim]   Hadith {curr + 1} of {total}[/dim]")
         console.print()
-        console.print("  [green]n[/green] next  ·  [green]p[/green] previous  ·  [green]q[/green] back to books")
+        console.print("  [green]n[/green] next · [green]p[/green] prev · [green]s[/green] save bookmark · [green]q[/green] back")
         console.print("  > ", end="")
 
         try:
@@ -532,10 +546,23 @@ def _read_section_flow(edition: str, section_no: str, section_name: str, coll_na
                     curr -= 1
                 else:
                     console.print("  [yellow]✓ Start of book.[/yellow]")
+            elif cmd == "s":
+                console.print("\n  [dim]Enter a name for this bookmark:[/dim]")
+                console.print("  > ", end="")
+                try:
+                    label = input().strip()
+                    if label:
+                        from quran.core.bookmark_store import save_bookmark
+                        col = edition.split("-")[-1] if "-" in edition else edition
+                        h_num = h.get("hadithnumber", curr + 1)
+                        save_bookmark(label, b_type="hadith", collection=col, book=section_no, number=h_num)
+                        console.print(f"  [green]✓ Saved bookmark: '{label}'[/green]\n")
+                        import time
+                        time.sleep(0.5)
+                except (KeyboardInterrupt, EOFError):
+                    pass
             elif cmd == "q":
                 break
-            else:
-                pass
         except (KeyboardInterrupt, EOFError):
             break
 

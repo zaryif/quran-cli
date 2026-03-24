@@ -285,7 +285,8 @@ def _interactive_read():
 
     # 1. Main Action Menu
     actions = [
-        "  Read Quran with Translation",
+        "  Read Quran with Translation (Full Surah)",
+        "  Interactive Ayah-by-Ayah (n/p/s)",
         "  Dual Mode (Arabic + Primary)",
         "  Dual Translation (Two Languages)",
         "  Search Quran",
@@ -304,7 +305,7 @@ def _interactive_read():
     )
     idx = menu.show()
 
-    if idx is None or idx == 4:
+    if idx is None or idx == 5:
         console.print("  [dim]Cancelled.[/dim]\n")
         return
 
@@ -336,20 +337,25 @@ def _interactive_read():
         l_idx = l_menu.show()
         return lang_items[l_idx] if l_idx is not None else None
 
-    # 4. Handle Actions
     if idx == 0:  # Single Translation
         l1 = pick_lang("Select Translation Language")
         if not l1:
             return
         _run_read_logic(surah_n, lang=l1)
 
-    elif idx == 1:  # Dual Mode (Arabic + L1)
+    elif idx == 1:  # Interactive Ayah-by-Ayah
+        l1 = pick_lang("Select Translation Language")
+        if not l1:
+            return
+        _read_ayah_by_ayah_flow(surah_n, lang=l1)
+
+    elif idx == 2:  # Dual Mode (Arabic + L1)
         l1 = pick_lang("Select Translation Language")
         if not l1:
             return
         _run_read_logic(surah_n, lang=l1, dual=True)
 
-    elif idx == 2:  # Dual Translation (L1 + L2)
+    elif idx == 3:  # Dual Translation (L1 + L2)
         l1 = pick_lang("Select First Language")
         if not l1:
             return
@@ -358,7 +364,7 @@ def _interactive_read():
             return
         _run_read_logic(surah_n, lang=l1, lang2_opt=l2, dual2=True)
 
-    elif idx == 3:  # Search — BUG FIX: use subprocess, not direct function call
+    elif idx == 4:  # Search — BUG FIX: use subprocess, not direct function call
         console.print()
         console.print("  [dim]Enter a search keyword:[/dim]")
         console.print("  > ", end="")
@@ -369,6 +375,96 @@ def _interactive_read():
         if query:
             import subprocess
             subprocess.run(f'quran search "{query}"', shell=True)
+
+
+def _read_ayah_by_ayah_flow(surah_n: int, lang: str):
+    """Interactive loop to read ayah by ayah using keys."""
+    from quran.core.quran_engine import fetch_surah, get_surah_meta
+    from simple_term_menu import TerminalMenu
+    from quran.core.bookmark_store import save_bookmark
+
+    meta = get_surah_meta(surah_n)
+    if not meta:
+        return
+
+    console.print()
+    console.print(f"[dim]Fetching {meta['name']}…[/dim]")
+    ayahs = fetch_surah(surah_n, lang, 1, None)
+    if not ayahs:
+        _fetch_error(meta["name"], surah_n, lang)
+        return
+
+    _render_surah_header(meta)
+
+    total = len(ayahs)
+    current_idx = 0
+
+    while True:
+        a = ayahs[current_idx]
+        console.clear()
+        _render_surah_header(meta)
+
+        # Print current Ayah
+        console.print(f"  [dim green]{surah_n}:{a['ayah']}[/dim green]  {a['text']}\n")
+        
+        # Build prompt
+        prompt = f"  [dim]Ayah {a['ayah']} of {total}  —  "
+        if current_idx > 0:
+            prompt += "(p) prev, "
+        if current_idx < total - 1:
+            prompt += "(n) next, "
+        prompt += "(s) save bookmark, (q) quit[/dim]"
+
+        console.print(prompt)
+
+        menu = TerminalMenu(
+            ["n", "p", "s", "q"],
+            show_search_hint=False,
+            menu_cursor_style=("fg_green", "bold"),
+            clear_screen=False,
+            # We don't actually want them to select from a menu, we just want a single keystroke.
+            # But simple-term-menu accepts keystrokes directly. We'll use getch.
+        )
+        # Using simple_term_menu's underlying getch is tricky. We'll use Python's built-in input if we have to, 
+        # or we just show a small 4-item menu:
+        menu_items = []
+        if current_idx < total - 1: menu_items.append("Next Ayah (Default)")
+        if current_idx > 0: menu_items.append("Previous Ayah")
+        menu_items.append("Save Bookmark")
+        menu_items.append("Quit")
+
+        nav_menu = TerminalMenu(
+            menu_items,
+            title="",
+            menu_cursor_style=("fg_green", "bold")
+        )
+        choice_idx = nav_menu.show()
+        if choice_idx is None:
+            break
+        
+        choice_str = menu_items[choice_idx]
+
+        if choice_str.startswith("Next"):
+            current_idx += 1
+        elif choice_str.startswith("Previous"):
+            current_idx -= 1
+        elif choice_str.startswith("Save"):
+            console.print("\n  [dim]Enter a label to save this bookmark (e.g., 'morning_read'):[/dim]")
+            console.print("  > ", end="")
+            try:
+                label = input().strip()
+                if label:
+                    save_bookmark(label, b_type="quran", surah=surah_n, ayah=a["ayah"])
+                    console.print(f"\n  [green]✓ Saved bookmark: '{label}'[/green]")
+                    import time
+                    time.sleep(1)
+            except (KeyboardInterrupt, EOFError):
+                pass
+        elif choice_str.startswith("Quit"):
+            break
+
+    console.print("\n  [dim]Exited Interactive Reading.[/dim]\n")
+
 
 
 def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
