@@ -348,7 +348,7 @@ def hadith_search(
 def _interactive_picker() -> None:
     """Top-level interactive Hadith browser: Collection → Section → Read."""
     console.print()
-    console.print(Rule("[dim]Hadith Browser[/dim]", style="green"))
+    console.print(Rule("[bold]Hadith Browser[/bold]", style="green"))
     console.print()
 
     try:
@@ -357,45 +357,91 @@ def _interactive_picker() -> None:
         console.print("  [red]simple-term-menu[/red] required for interactive browser.")
         return
 
+    console.print("  [dim]Browse authentic Hadith from the six major collections.[/dim]")
+    console.print("  [dim]Select your preferred language, then a collection to start reading.[/dim]")
+    console.print()
+
     with console.status("[dim]Loading collections…[/dim]"):
         editions = _fetch_editions()
 
     if not editions:
-        console.print("[red]✗[/red] Could not fetch editions.")
+        console.print("[red]✗[/red] Could not fetch editions. Check your internet.")
         return
 
-    # Build flat list of editions with collection names
-    ed_items = []  # (edition_id, display_label)
+    # ── Step 1: Collect all available languages ──────────────────────────────
+    lang_map: dict[str, list[tuple[str, str, str]]] = {}
     for coll_key, coll_data in sorted(editions.items()):
         coll_name = coll_data.get("name", coll_key)
         for ed in coll_data.get("collection", []):
+            lang = ed.get("language", "Unknown")
             eid  = ed.get("name", "")
-            lang = ed.get("language", "")
-            ed_items.append((eid, f"  {coll_name:<30} {eid:<20} [{lang}]"))
+            author = ed.get("author", "")
+            lang_map.setdefault(lang, []).append((eid, coll_name, author))
 
-    labels = [item[1] for item in ed_items]
-    labels.insert(0, "  ★ Hadith of the Day")
+    lang_keys = sorted(lang_map.keys(), key=lambda l: (0 if l == "English" else 1, l))
+
+    lang_labels = ["  ★  Hadith of the Day"]
+    for i, lang in enumerate(lang_keys):
+        count = len(lang_map[lang])
+        lang_labels.append(f"  {i + 1:>2}. {lang:<16} [dim]({count} editions)[/dim]")
+    lang_labels.append("  ←  Back to Menu")
 
     console.print("  [dim]↑↓ navigate · Enter select · / search · q back[/dim]\n")
 
-    menu = TerminalMenu(
-        labels,
-        title="  Select a Collection to Browse:",
+    lang_menu = TerminalMenu(
+        lang_labels,
+        title="  Step 1 — Select Language:",
         menu_cursor="> ",
         menu_cursor_style=("fg_green", "bold"),
         menu_highlight_style=("fg_green", "bold"),
         show_search_hint=True,
     )
-    idx = menu.show()
+    lang_idx = lang_menu.show()
 
-    if idx is None:
+    if lang_idx is None or lang_idx == len(lang_labels) - 1:
         return
-    if idx == 0:
+    if lang_idx == 0:
         hadith_daily()
         return
 
-    edition_key = ed_items[idx - 1][0]
-    _browse_edition_sections(edition_key, TerminalMenu)
+    selected_lang = lang_keys[lang_idx - 1]
+    _pick_collection(selected_lang, lang_map[selected_lang], TerminalMenu)
+
+
+def _pick_collection(lang: str, editions: list[tuple[str, str, str]], TerminalMenu) -> None:
+    """Show numbered list of collections in the user's chosen language."""
+    while True:
+        console.print()
+        console.print(Rule(
+            f"[bold]{lang} Editions[/bold]  [dim]({len(editions)} available)[/dim]",
+            style="green"
+        ))
+        console.print()
+        console.print("  [dim]Pick a collection to browse its books and hadiths.[/dim]")
+        console.print("  [dim]Tip: Use / to search by name. Press q to go back.[/dim]")
+        console.print()
+
+        labels = []
+        for i, (eid, coll_name, author) in enumerate(editions):
+            author_str = f"  [dim]by {author}[/dim]" if author and author != "Unknown" else ""
+            labels.append(f"  {i + 1:>2}. {coll_name:<28}{author_str}")
+        labels.append("  ←  Back to Languages")
+
+        menu = TerminalMenu(
+            labels,
+            title=f"  Step 2 — {lang} Collections:",
+            menu_cursor="> ",
+            menu_cursor_style=("fg_green", "bold"),
+            menu_highlight_style=("fg_green", "bold"),
+            show_search_hint=True,
+        )
+        idx = menu.show()
+
+        if idx is None or idx == len(labels) - 1:
+            return
+
+        eid = editions[idx][0]
+        _browse_edition_sections(eid, TerminalMenu)
 
 
 def _browse_edition_sections(edition_key: str, TerminalMenu) -> None:
@@ -407,32 +453,35 @@ def _browse_edition_sections(edition_key: str, TerminalMenu) -> None:
     coll_name = meta.get("name", edition_key)
 
     if not sections:
-        # No sections available — fallback to sequential reading
         console.print(f"  [yellow]No sections found for {edition_key}. Starting sequential read.[/yellow]")
         hadith_read(edition_key, 1)
         return
 
-    # Build section menu (skip section "0" which is usually empty)
     sec_keys = sorted(
         [k for k in sections.keys() if k != "0"],
         key=lambda k: int(k) if k.isdigit() else 0
     )
-    labels = []
-    for k in sec_keys:
-        name = sections[k] or "General"
-        labels.append(f"  {k:>3}. {name}")
 
     while True:
         console.print()
         console.print(Rule(
-            f"[dim]{coll_name}[/dim]  [green]{len(sec_keys)} books[/green]",
+            f"[bold]{coll_name}[/bold]  [green]{len(sec_keys)} books[/green]",
             style="bright_black"
         ))
-        console.print("  [dim]↑↓ navigate · Enter select · / search · q back[/dim]\n")
+        console.print()
+        console.print("  [dim]Each book covers a topic. Select one to start reading.[/dim]")
+        console.print("  [dim]Use n/p to navigate between hadiths, q to return here.[/dim]")
+        console.print()
+
+        labels = []
+        for i, k in enumerate(sec_keys):
+            name = sections[k] or "General"
+            labels.append(f"  {i + 1:>3}. {name}")
+        labels.append("  ←  Back to Collections")
 
         menu = TerminalMenu(
             labels,
-            title=f"  {coll_name} — Select a Book:",
+            title=f"  Step 3 — {coll_name} Books:",
             menu_cursor="> ",
             menu_cursor_style=("fg_green", "bold"),
             menu_highlight_style=("fg_green", "bold"),
@@ -440,15 +489,15 @@ def _browse_edition_sections(edition_key: str, TerminalMenu) -> None:
         )
         idx = menu.show()
 
-        if idx is None:
+        if idx is None or idx == len(labels) - 1:
             return
 
         selected_sec = sec_keys[idx]
         sec_name = sections.get(selected_sec, "")
-        _read_section_flow(edition_key, selected_sec, sec_name)
+        _read_section_flow(edition_key, selected_sec, sec_name, coll_name)
 
 
-def _read_section_flow(edition: str, section_no: str, section_name: str) -> None:
+def _read_section_flow(edition: str, section_no: str, section_name: str, coll_name: str = "") -> None:
     """Read hadiths within a section with n/p/q navigation."""
     with console.status(f"[dim]Loading Book {section_no}: {section_name}…[/dim]"):
         hadiths = _fetch_section_hadiths(edition, section_no)
@@ -464,8 +513,11 @@ def _read_section_flow(edition: str, section_no: str, section_name: str) -> None
         h = hadiths[curr]
         _render(h)
 
-        console.print(f"  [dim]Book {section_no}: {section_name}  ·  {curr + 1}/{total}[/dim]")
-        console.print("  [dim]n: next · p: previous · q: back to books[/dim]")
+        title = coll_name or edition
+        console.print(f"  [dim]📖 {title} · Book {section_no}: {section_name}[/dim]")
+        console.print(f"  [dim]   Hadith {curr + 1} of {total}[/dim]")
+        console.print()
+        console.print("  [green]n[/green] next  ·  [green]p[/green] previous  ·  [green]q[/green] back to books")
         console.print("  > ", end="")
 
         try:
@@ -474,15 +526,16 @@ def _read_section_flow(edition: str, section_no: str, section_name: str) -> None
                 if curr < total - 1:
                     curr += 1
                 else:
-                    console.print("  [yellow]End of book.[/yellow]")
+                    console.print("  [yellow]✓ End of book. Press q to go back.[/yellow]")
             elif cmd == "p":
                 if curr > 0:
                     curr -= 1
                 else:
-                    console.print("  [yellow]Start of book.[/yellow]")
+                    console.print("  [yellow]✓ Start of book.[/yellow]")
             elif cmd == "q":
                 break
             else:
                 pass
         except (KeyboardInterrupt, EOFError):
             break
+
