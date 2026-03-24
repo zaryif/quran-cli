@@ -12,7 +12,22 @@ console = Console()
 @app.callback(invoke_without_command=True)
 def update_cmd():
     """Download and install the latest version from GitHub."""
-    console.print("\n  [dim]Downloading and installing the latest version...[/dim]\n")
+    import os
+    
+    # Check if we are in a git repository
+    is_git = os.path.exists(".git")
+    
+    if is_git:
+        console.print("\n  [dim]Detected Git repository. Pulling latest changes from main...[/dim]\n")
+        try:
+            subprocess.run(["git", "pull", "origin", "main"], check=True)
+            console.print("\n  [green]✓[/green] Successfully pulled latest changes from GitHub.")
+            console.print("  [dim]You may need to run 'pip install -e .' to apply environment changes.[/dim]\n")
+            return
+        except subprocess.CalledProcessError:
+            console.print("\n  [yellow]![/yellow] Git pull failed. Falling back to pip install...\n")
+
+    console.print("\n  [dim]Downloading and installing the latest version via pip...[/dim]\n")
     try:
         subprocess.run(
             [sys.executable, "-m", "pip", "install", "--upgrade", "git+https://github.com/zaryif/quran-cli.git"],

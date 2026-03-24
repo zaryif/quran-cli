@@ -1,5 +1,7 @@
 """quran-cli — Islamic terminal companion. Entry point: quran"""
 import typer
+from typing import Optional
+from typing_extensions import Annotated
 from rich.console import Console
 
 app = typer.Typer(
@@ -35,6 +37,18 @@ app.add_typer(connect.app,  name="connect",  help="Notification channels.")
 app.add_typer(update.app,   name="update",   help="Update quran-cli to the latest version.")
 app.add_typer(cache.app,    name="cache",    help="Download Quran for offline use.")
 app.add_typer(bot.app,      name="bot",      help="Telegram prayer reminder bot.")
+
+@app.command("browse")
+def browse_cmd(
+    edition: Annotated[Optional[str], typer.Argument(help="Edition ID to browse")] = None
+):
+    """Interactive section browser for Hadith."""
+    from quran.commands.hadith import _interactive_picker, _browse_edition_sections
+    from simple_term_menu import TerminalMenu
+    if edition:
+        _browse_edition_sections(edition, TerminalMenu)
+    else:
+        _interactive_picker()
 
 @app.command("quote")
 def quote_cmd():

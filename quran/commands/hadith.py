@@ -308,7 +308,7 @@ def _interactive_picker() -> None:
 
         menu = TerminalMenu(
             labels, 
-            title="  Select a Collection:", 
+            title="  Select a Collection to Browse:", 
             menu_cursor_style=("fg_green", "bold"), 
             menu_highlight_style=("fg_green", "bold"),
             show_search_hint=True

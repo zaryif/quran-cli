@@ -25,6 +25,7 @@ from rich.text import Text
 from rich.rule import Rule
 from rich.align import Align
 from rich import box
+from quran import __version__
 
 console = Console()
 
@@ -135,6 +136,7 @@ def print_banner() -> None:
     
     date_str = f"{today.strftime('%d %B %Y')}  ·  {hd} {hm_name} {hy} AH"
     c.print(Align.center(Text(date_str, style="bold white")))
+    c.print(Align.center(Text(f"v{__version__}", style="dim cyan")))
 
     c.print(Align.center(Text("Created by Md Zarif Azfar", style="dim white")))
     if is_ramadan():
