@@ -88,7 +88,7 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 
 ---
 
-### **⭐ Recommended Installation (Stable v1.2.8)**
+### **⭐ Recommended Installation (Stable v1.2.10)**
 To get the latest version with all features, clone and install from source:
 
 ```bash
@@ -422,6 +422,7 @@ All data is fetched from free, open, authenticated sources — no mock data anyw
 | **fawazahmed0/hadith-api** | Authentic hadith corpus | `cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/` |
 | **ip-api.com** | Auto location detection | `ip-api.com/json/` |
 | **ntfy.sh** | Free phone push | `ntfy.sh/{topic}` |
+| **IslamicAPI** | Daily fasting times | `islamicapi.com` |
 
 All Quran text and hadith are cached locally after first fetch — works completely offline thereafter.
 
@@ -433,15 +434,19 @@ All Quran text and hadith are cached locally after first fetch — works complet
 quran-cli/
 ├── quran/
 │   ├── cli.py                 # Entry point
-│   ├── commands/              # 16 commands
+│   ├── commands/              # 23 commands
 │   │   ├── read.py            # quran read (by number, name, dual-language)
 │   │   ├── pray.py            # prayer times + setup
 │   │   ├── schedule.py        # full day view
 │   │   ├── ramadan.py         # Ramadan timings + calendar
+│   │   ├── fasting.py         # Daily sunnah fasting
 │   │   ├── eid.py             # Eid salah guide
 │   │   ├── namaz.py           # salah performance guide
 │   │   ├── guide.py           # AI Quran + Hadith RAG
 │   │   ├── connect.py         # notification channels
+│   │   ├── remind.py          # Notification wizard & daemon
+│   │   ├── bot.py             # Cloud Telegram Bot
+│   │   ├── bookmark.py        # Universal Quran/Hadith bookmarks
 │   │   └── ...
 │   ├── core/
 │   │   ├── prayer_times.py    # Pure-Python Adhan algorithm
