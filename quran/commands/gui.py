@@ -81,19 +81,19 @@ def _main_menu_loop(TerminalMenu):
     while True:
         options = [
             "  Read Quran",
+            "  Browse Hadith",
             "  Read Quran with Translation",
-            "  Search",
             "  Daily Prayer Schedule",
+            "  Search",
             "  Ramadan Guide",
             "  Prayer Details",
             "  Eid Guide",
-            "  Browse Hadith",
+            "  AI Guide",
             "  Muslim World News",
             "  Reading Streak",
             "  Bookmarks",
             "  Change Language",
             "  Notification Channels",
-            "  AI Guide",
             "  All Commands",
             "  Run Command",
             "  Update quran-cli",
@@ -121,19 +121,19 @@ def _main_menu_loop(TerminalMenu):
 
         actions = [
             lambda: _read_submenu(TerminalMenu),              # Read Quran
+            lambda: _hadith_submenu(TerminalMenu),            # Browse Hadith
             lambda: _read_with_translation_flow(TerminalMenu),# Read with Translation
-            lambda: _search_prompt(),                         # Search
             lambda: _run("quran schedule"),                   # Daily Prayer Schedule
+            lambda: _search_prompt(),                         # Search
             lambda: _run("quran ramadan"),                    # Ramadan Guide
             lambda: _run("quran namaz"),                      # Prayer Details
             lambda: _run("quran eid"),                        # Eid Guide
-            lambda: _hadith_submenu(TerminalMenu),            # Browse Hadith
+            lambda: _run("quran guide"),                      # AI Guide
             lambda: _news_submenu(TerminalMenu),              # Muslim World News
             lambda: _run("quran streak"),                     # Reading Streak
             lambda: _run("quran bookmark"),                   # Bookmarks
             lambda: _run("quran lang"),                       # Change Language
             lambda: _run("quran connect"),                    # Notification Channels
-            lambda: _run("quran guide"),                      # AI Guide
             lambda: _show_commands_ref(),                     # All Commands
             lambda: _run_any_command(),                       # Run Command
             lambda: _run("quran update"),                     # Update quran-cli
@@ -302,11 +302,10 @@ def _hadith_submenu(TerminalMenu):
     console.print()
 
     options = [
-        "  Today's hadith of the day",
-        "  Browse by topic",
-        "  Search by keyword",
-        "  Read specific hadith",
-        "  Return to Menu",
+        "  [bold]Browse Collections[/bold]        [dim](Bukhari, Muslim, etc.)[/dim]",
+        "  [bold]Hadith of the Day[/bold]         [dim](Daily rotation)[/dim]",
+        "  [bold]Search Topics[/bold]             [dim](Patience, Prayer, etc.)[/dim]",
+        "  [back] Return to Menu[/back]",
     ]
 
     menu = TerminalMenu(
@@ -324,9 +323,9 @@ def _hadith_submenu(TerminalMenu):
         return
 
     if idx == 0:
-        _run("quran hadith daily")
-    elif idx == 1:
         _run("quran hadith")
+    elif idx == 1:
+        _run("quran hadith daily")
     elif idx == 2:
         console.print()
         console.print("  [dim]Enter a topic (e.g. patience, prayer, fasting, tawakkul):[/dim]")
@@ -337,16 +336,7 @@ def _hadith_submenu(TerminalMenu):
                 _run(f'quran hadith search "{kw}"')
         except (KeyboardInterrupt, EOFError):
             pass
-    elif idx == 3:
-        console.print()
-        console.print("  [dim]Format: <collection> <book> <number>  e.g. bukhari 1 1[/dim]")
-        console.print("  > ", end="")
-        try:
-            parts = input().strip().split()
-            if len(parts) == 3:
-                _run(f"quran hadith read {parts[0]} {parts[1]} {parts[2]}")
-        except (KeyboardInterrupt, EOFError):
-            pass
+    # idx == 3 is Return to Menu
     # idx == 4 or None → back
 
 
