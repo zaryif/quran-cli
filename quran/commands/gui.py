@@ -211,8 +211,10 @@ def _read_submenu(TerminalMenu):
     console.print()
 
     options = [
-        "  Browse Surahs (1–114)",
+        "  Browse Surahs (1–114)        [dim](Full Surah)[/dim]",
+        "  Read Ayah-by-Ayah          [dim](Interactive)[/dim]",
         "  Read by Ayah Reference",
+        "  Advanced Reader Wizard     [dim](Size, Dual, Mode)[/dim]",
         "  Return to Menu",
     ]
 
@@ -231,13 +233,17 @@ def _read_submenu(TerminalMenu):
         return
 
     if idx == 0:
-        _surah_browser(TerminalMenu)
+        _surah_browser(TerminalMenu, mode="full")
     elif idx == 1:
+        _surah_browser(TerminalMenu, mode="ayah")
+    elif idx == 2:
         _read_by_ref()
-    # idx == 2 or None → back
+    elif idx == 3:
+        _run("quran read")
+    # idx == 4 or None → back
 
 
-def _surah_browser(TerminalMenu):
+def _surah_browser(TerminalMenu, mode="full"):
     """Arrow-key browsable list of all 114 surahs with book-like navigation."""
     from quran.core.quran_engine import SURAH_META
 
@@ -268,7 +274,11 @@ def _surah_browser(TerminalMenu):
             return
 
         surah_num = SURAH_META[idx][0]
-        _read_with_navigation(surah_num, TerminalMenu)
+        
+        if mode == "ayah":
+            _run(f"quran read {surah_num} --mode ayah")
+        else:
+            _read_with_navigation(surah_num, TerminalMenu)
 
 
 def _read_with_navigation(surah_num: int, TerminalMenu):
