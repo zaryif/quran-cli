@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Discussions
+    url: https://github.com/zaryif/quran-cli/discussions
+    about: Ask questions and share ideas in GitHub Discussions.
+  - name: Documentation
+    url: https://github.com/zaryif/quran-cli/blob/main/README.md
+    about: Check the full README before opening an issue.

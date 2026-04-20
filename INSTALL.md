@@ -268,6 +268,7 @@ quran schedule --week       7-day timetable
 quran pray                  today's 5 prayer times
 quran pray next             countdown to next prayer
 quran pray setup            location + method wizard
+quran clock                 live prayer clock (seconds + countdown)
 quran read <surah>          read by number: quran read 18
 quran read <name>           read by name: quran read kahf
 quran read <ref>            read by ayah: quran read 2:255
@@ -280,6 +281,8 @@ quran namaz fajr            how to perform Fajr
 quran namaz jummah          Friday prayer guide
 quran ramadan               today's sehri, iftar, tarawih
 quran ramadan --month       30-day Ramadan calendar
+quran fasting               today's sahur & iftar times
+quran fasting --week        7-day fasting schedule
 quran eid                   upcoming Eid dates
 quran eid fitr              Eid ul-Fitr salah guide
 quran eid adha              Eid ul-Adha + Qurbani guide
@@ -293,10 +296,14 @@ quran remind on             start notification daemon
 quran streak                reading + fasting streaks
 quran bookmark save "x" 2:255  save position
 quran news                  Muslim world headlines
+quran lock                  lock screen (PIN or Ctrl+C)
+quran lock setup            set or change screen lock PIN
+quran lock off              remove screen lock PIN
 quran info surahs           list all 114 surahs
 quran info hijri            today's Hijri date
 quran config show           view all settings
 quran config set lang bn    change language
+quran update                update to latest version
 ```
 
 ---

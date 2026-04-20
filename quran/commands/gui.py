@@ -23,6 +23,8 @@ COMMANDS_REF = [
     ("quran",                        "Interactive dashboard"),
     ("quran read <surah>",           "Read a surah in Arabic"),
     ("quran read <surah> --dual",    "Read side-by-side Arabic + Translation"),
+    ("quran read <surah> --size",    "Text size: small, medium, large"),
+    ("quran read <surah> --mode",    "Reading mode: full, ayah, page"),
     ("quran search \"patience\"",      "Search across the Quran"),
     ("quran hadith",                 "Browse Hadith (Language → Collection → Book)"),
     ("quran hadith daily",           "Hadith of the day"),
@@ -33,6 +35,11 @@ COMMANDS_REF = [
     ("quran fasting",                "Today's Sahur & Iftar times"),
     ("quran fasting --week",         "7-day fasting schedule"),
     ("quran pray",                   "Prayer times for your location"),
+    ("quran pray setup",             "Location & calculation method wizard"),
+    ("quran clock",                  "Live prayer clock with seconds + 5-waqt"),
+    ("quran lock",                   "Lock the screen (PIN or Ctrl+C)"),
+    ("quran lock setup",             "Set or change screen lock PIN"),
+    ("quran lock off",               "Remove screen lock PIN"),
     ("quran schedule",               "Full day Islamic schedule"),
     ("quran ramadan",                "Sehri, Iftar & Tarawih times"),
     ("quran namaz",                  "Prayer details & rakat breakdown"),
@@ -86,24 +93,37 @@ def _main_menu_loop(TerminalMenu):
             "  Read Quran",
             "  Browse Hadith",
             "  Read Quran with Translation",
+            "  ─────────────────────────────",
             "  Daily Prayer Schedule",
+            "  Prayer Clock  [live · seconds]",
             "  Fasting Times",
-            "  Search",
             "  Ramadan Guide",
             "  Prayer Details",
             "  Eid Guide",
+            "  ─────────────────────────────",
+            "  Search",
             "  AI Guide",
             "  Muslim World News",
+            "  ─────────────────────────────",
             "  Reading Streak",
             "  Bookmarks",
+            "  ─────────────────────────────",
             "  Reminder Setup Wizard",
+            "  Prayer Times Setup",
             "  Change Language",
             "  Notification Channels",
+            "  ─────────────────────────────",
             "  All Commands",
             "  Run Command",
             "  Update quran-cli",
+            "  Lock Screen",
+            "  Lock Screen Setup",
+            "  ─────────────────────────────",
             "  Exit",
         ]
+
+        # Separator indices (not selectable)
+        _seps = {3, 10, 14, 17, 22, 28}
 
         console.print("  [dim]↑↓ navigate · Enter select · q quit[/dim]\n")
 
@@ -114,6 +134,7 @@ def _main_menu_loop(TerminalMenu):
             menu_cursor_style=("fg_cyan", "bold"),
             menu_highlight_style=("fg_cyan", "bold"),
             clear_screen=False,
+            skip_empty_entries=True,
         )
 
         try:
@@ -124,29 +145,38 @@ def _main_menu_loop(TerminalMenu):
         if idx is None or idx == len(options) - 1:
             sys.exit(0)
 
-        actions = [
-            lambda: _read_submenu(TerminalMenu),              # Read Quran
-            lambda: _hadith_submenu(TerminalMenu),            # Browse Hadith
-            lambda: _read_with_translation_flow(TerminalMenu),# Read with Translation
-            lambda: _run("quran schedule"),                   # Daily Prayer Schedule
-            lambda: _run("quran fasting"),                    # Fasting Times
-            lambda: _search_prompt(),                         # Search
-            lambda: _run("quran ramadan"),                    # Ramadan Guide
-            lambda: _run("quran namaz"),                      # Prayer Details
-            lambda: _run("quran eid"),                        # Eid Guide
-            lambda: _run("quran guide"),                      # AI Guide
-            lambda: _news_submenu(TerminalMenu),              # Muslim World News
-            lambda: _run("quran streak"),                     # Reading Streak
-            lambda: _run("quran bookmark"),                   # Bookmarks
-            lambda: _run("quran remind setup"),               # Reminder Setup Wizard
-            lambda: _run("quran lang"),                       # Change Language
-            lambda: _run("quran connect"),                    # Notification Channels
-            lambda: _show_commands_ref(),                     # All Commands
-            lambda: _run_any_command(),                       # Run Command
-            lambda: _run("quran update"),                     # Update quran-cli
-        ]
+        if idx in _seps:
+            continue
 
-        actions[idx]()
+        actions = {
+            0:  lambda: _read_submenu(TerminalMenu),               # Read Quran
+            1:  lambda: _hadith_submenu(TerminalMenu),             # Browse Hadith
+            2:  lambda: _read_with_translation_flow(TerminalMenu), # Read with Translation
+            4:  lambda: _run("quran schedule"),                    # Daily Prayer Schedule
+            5:  lambda: _run("quran clock"),                       # Prayer Clock
+            6:  lambda: _run("quran fasting"),                     # Fasting Times
+            7:  lambda: _run("quran ramadan"),                     # Ramadan Guide
+            8:  lambda: _run("quran namaz"),                       # Prayer Details
+            9:  lambda: _run("quran eid"),                         # Eid Guide
+            11: lambda: _search_prompt(),                          # Search
+            12: lambda: _run("quran guide"),                       # AI Guide
+            13: lambda: _news_submenu(TerminalMenu),               # Muslim World News
+            15: lambda: _run("quran streak"),                      # Reading Streak
+            16: lambda: _run("quran bookmark"),                    # Bookmarks
+            18: lambda: _run("quran remind setup"),                # Reminder Setup Wizard
+            19: lambda: _run("quran pray setup"),                  # Prayer Times Setup
+            20: lambda: _run("quran lang"),                        # Change Language
+            21: lambda: _run("quran connect"),                     # Notification Channels
+            23: lambda: _show_commands_ref(),                      # All Commands
+            24: lambda: _run_any_command(),                        # Run Command
+            25: lambda: _run("quran update"),                      # Update quran-cli
+            26: lambda: _run("quran lock"),                        # Lock Screen
+            27: lambda: _run("quran lock setup"),                  # Lock Screen Setup
+        }
+
+        action = actions.get(idx)
+        if action:
+            action()
         console.print()
 
 

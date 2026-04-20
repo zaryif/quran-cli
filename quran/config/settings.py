@@ -58,7 +58,11 @@ DEFAULTS = {
     "ramadan": {
         "notify_sehri_min": 15,
         "notify_iftar_min": 15,
-    }
+    },
+    "lock": {
+        "pin_hash": "",
+        "enabled":  False,
+    },
 }
 
 

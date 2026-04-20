@@ -32,8 +32,11 @@ In the name of Allah, the Most Gracious, the Most Merciful
   quran read 2:1-10                  ayah range
   quran search "patience"            search across the Quran
   quran pray                         prayer times for your location
+  quran clock                        live prayer clock with seconds
   quran ramadan                      sehri, iftar & tarawih times
   quran namaz                        prayer details & rakat breakdown
+  quran fasting                      daily sahur & iftar times
+  quran lock                         screen lock with PIN protection
   quran lang                         change display language
   quran connect                      notification channels
   quran hadith                      interactive edition & book browser
@@ -71,11 +74,14 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 | 🔤 | Arabic text + 13 language translations | `quran read 36 --dual` |
 | 🔍 | Full-text Quran search (live API) | `quran search "patience"` |
 | 🕌 | Accurate prayer times (8 methods) | `quran pray` |
+| 🕐 | Live prayer clock with countdown | `quran clock` |
 | 📅 | Full-day Islamic schedule | `quran schedule` |
 | ☽  | Ramadan sehri, iftar, tarawih | `quran ramadan` |
+| 🌙 | Daily fasting times + Sunnah days | `quran fasting` |
 | ✦  | Eid ul-Fitr & Eid ul-Adha guide | `quran eid fitr` |
 | 🙏 | How-to for every Salah | `quran namaz fajr` |
 | 🤲 | Quran & Hadith AI guide (RAG) | `quran guide "..."` |
+| 🔒 | Terminal screen lock with PIN | `quran lock` |
 | 📱 | Phone push via ntfy.sh (free, QR) | `quran connect ntfy` |
 | 💬 | Telegram prayer reminders | `quran connect telegram` |
 | 📧 | Gmail daily digest | `quran connect gmail` |
@@ -88,8 +94,14 @@ Built with care by [Md Zarif Azfar](https://mdzarifazfar.me) — a Muslim develo
 
 ---
 
-### **⭐ Recommended Installation (Stable v1.2.10)**
-To get the latest version with all features, clone and install from source:
+### **⭐ One-Liner Install (from GitHub)**
+
+```bash
+pip3 install git+https://github.com/zaryif/quran-cli.git
+```
+
+### **⭐ Recommended Installation (v1.3.0)**
+Clone and install from source for development:
 
 ```bash
 git clone https://github.com/zaryif/quran-cli.git
@@ -140,6 +152,9 @@ quran schedule               # full day — auto-detects Ramadan, shows sehri/if
 quran pray                   # today's 5 prayer times (auto-detected location)
 quran pray next              # countdown to next prayer
 quran pray setup             # set location + calculation method
+quran clock                  # live prayer clock with seconds + countdown
+quran fasting                # today's sahur & iftar times + Sunnah days
+quran lock                   # lock the screen (PIN or Ctrl+C)
 quran cache download         # cache all 114 surahs for fully offline reading
 ```
 
@@ -167,6 +182,19 @@ quran read 36 --lang bn      # Bangla
 quran read 36 --lang ur      # Urdu
 quran read 36 --lang ar      # Arabic only
 quran read 36 --dual         # Arabic + translation side by side
+
+# Text size — small, medium (default), large
+quran read 1 --size small    # compact: ref + text, no Arabic
+quran read 1 --size large    # panel-wrapped with borders + padding
+quran read 1 --dual --size large  # Arabic + translation in panels
+
+# Reading mode — full (default), ayah, page
+quran read 18 --mode page    # 5 ayahs per page (Enter/n/p/q)
+quran read 18 --mode ayah    # one ayah at a time (Enter/n/p/s/q)
+quran read 36 --mode page --size large  # both combined
+
+# Interactive navigator
+quran read                   # opens Surah + Language + Size picker
 
 # Search
 quran search "patience"
@@ -230,6 +258,18 @@ quran config set asr_method Hanafi   # Standard or Hanafi
 
 ---
 
+## Prayer Clock
+
+Live full-screen prayer clock with seconds-level countdown and all 5 Waqt times.
+
+```bash
+quran clock                  # live clock — Ctrl+C to exit
+```
+
+Shows: current time with seconds · Hijri date · 5-waqt Namaz times · next prayer countdown · Sehri/Iftar during Ramadan. Updates every second. Works on macOS, Linux, and Windows Terminal.
+
+---
+
 ## Ramadan
 
 ```bash
@@ -245,6 +285,20 @@ Output includes:
 - Tarawih time (Isha + 1.5h)
 - Fast duration (hours and minutes)
 - Laylatul Qadr nights highlighted (21, 23, 25, 27, 29)
+
+---
+
+## Fasting Times
+
+Daily fasting times for any day of the year — not just Ramadan.
+
+```bash
+quran fasting                # today's sahur & iftar times
+quran fasting --week         # 7-day fasting schedule
+quran fasting --date 2026-04-01  # specific date
+```
+
+Highlights Sunnah fasting days: Monday, Thursday, White Days (13–15 Hijri), Day of Arafah, Ashura, and Shawwal.
 
 ---
 
@@ -274,6 +328,20 @@ quran namaz witr             # Witr guide with Qunoot
 ```
 
 Each prayer shows: rakah breakdown (Sunnah/Fard/Nafl), Arabic name, significance, common mistakes.
+
+---
+
+## Screen Lock
+
+Lock your terminal with an optional PIN. Shows prayer times, Hijri date, and live clock while locked.
+
+```bash
+quran lock                   # lock screen (Ctrl+C or PIN to unlock)
+quran lock setup             # set or change your PIN
+quran lock off               # remove PIN and disable lock
+```
+
+Works on macOS, Linux, and Windows. PIN is SHA-256 hashed and stored locally in `~/.config/quran-cli/config.toml`.
 
 ---
 
@@ -433,37 +501,63 @@ All Quran text and hadith are cached locally after first fetch — works complet
 ```
 quran-cli/
 ├── quran/
-│   ├── cli.py                 # Entry point
-│   ├── commands/              # 23 commands
+│   ├── __init__.py            # Version
+│   ├── __main__.py            # python -m quran
+│   ├── cli.py                 # Entry point + top-level commands
+│   ├── commands/              # 26 command modules
 │   │   ├── read.py            # quran read (by number, name, dual-language)
 │   │   ├── pray.py            # prayer times + setup
+│   │   ├── clock.py           # live prayer clock with seconds + countdown
+│   │   ├── lock.py            # terminal screen lock with optional PIN
 │   │   ├── schedule.py        # full day view
 │   │   ├── ramadan.py         # Ramadan timings + calendar
-│   │   ├── fasting.py         # Daily sunnah fasting
+│   │   ├── fasting.py         # daily sunnah fasting times
 │   │   ├── eid.py             # Eid salah guide
 │   │   ├── namaz.py           # salah performance guide
+│   │   ├── hadith.py          # Hadith browser + daily + search
 │   │   ├── guide.py           # AI Quran + Hadith RAG
+│   │   ├── gui.py             # Interactive terminal dashboard
 │   │   ├── connect.py         # notification channels
-│   │   ├── remind.py          # Notification wizard & daemon
+│   │   ├── remind.py          # notification wizard & daemon
 │   │   ├── bot.py             # Cloud Telegram Bot
-│   │   ├── bookmark.py        # Universal Quran/Hadith bookmarks
-│   │   └── ...
+│   │   ├── bookmark.py        # universal Quran/Hadith bookmarks
+│   │   ├── search.py          # full-text Quran search
+│   │   ├── quote.py           # daily random ayah
+│   │   ├── streak.py          # reading + fasting streaks
+│   │   ├── tafsir.py          # Ibn Kathir tafsir
+│   │   ├── news.py            # Muslim world RSS news
+│   │   ├── lang.py            # language picker + config
+│   │   ├── cache.py           # offline data download
+│   │   ├── config.py          # config show/set/reset
+│   │   └── update.py          # self-update from GitHub
 │   ├── core/
 │   │   ├── prayer_times.py    # Pure-Python Adhan algorithm
 │   │   ├── quran_engine.py    # AlQuran.cloud + SQLite cache
 │   │   ├── location.py        # IP geolocation
 │   │   ├── ramadan.py         # Hijri calendar
 │   │   ├── scheduler.py       # APScheduler daemon
+│   │   ├── streak.py          # streak persistence
+│   │   ├── bookmark_store.py  # bookmark persistence
+│   │   ├── notifier.py        # notification dispatcher
 │   │   └── ai/
 │   │       └── rag_engine.py  # BM25 retrieval + LLM generation
+│   ├── config/
+│   │   └── settings.py        # TOML config load/save/defaults
 │   ├── connectors/
 │   │   └── connectors.py      # Desktop, ntfy, Telegram, WhatsApp, Gmail, Webhook
 │   └── ui/
 │       └── renderer.py        # Rich terminal renderer
+├── tests/
+│   ├── test_core.py           # Prayer times, Hijri, config tests
+│   └── test_notifications_fix.py
 ├── README.md
+├── INSTALL.md                 # Full installation guide
 ├── REQUIREMENTS.md
 ├── THINGS.md                  # Technical details + data authenticity
 ├── ABOUT.md                   # About the developer
+├── Dockerfile                 # Docker for cloud Telegram bot
+├── install.sh                 # One-liner installer script
+├── pyproject.toml             # Package metadata + dependencies
 └── docs/
     ├── PLAN.md                # Full architecture
     └── COMMANDS.md            # Complete command reference

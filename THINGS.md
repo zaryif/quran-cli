@@ -285,7 +285,62 @@ httpx.post(
 
 ---
 
-## 8. Data Files
+## 8. Screen Lock — PIN Security
+
+### How it works
+The `quran lock` command provides a terminal screen lock with optional PIN protection.
+
+```python
+# PIN is hashed with SHA-256 before storage — never stored in plaintext
+import hashlib
+pin_hash = hashlib.sha256(pin.encode()).hexdigest()
+
+# Stored in config.toml under [lock] section:
+# [lock]
+# pin_hash = "e3b0c44298fc1c149afbf4c8996fb924..."
+# enabled = true
+```
+
+### Lock screen modes
+- **Without PIN:** Live display using Rich `Live` component, exits on Ctrl+C
+- **With PIN:** Static screen + `getpass.getpass()` prompt, unlimited attempts with 1.5s delay
+
+### Display
+The lock screen shows real-time data using the same prayer times engine:
+- Current time (HH:MM:SS, updated every second)
+- Hijri date (Kuwaiti civil calendar algorithm)
+- 5-waqt Namaz times with Arabic names
+- Next prayer countdown
+- Sehri/Iftar times during Ramadan
+
+### Cross-platform
+- Uses `Rich Live` with `screen=True` (full-screen alternate buffer)
+- Falls back to `screen=False` on terminals that don't support alternate screen (e.g. older Windows cmd.exe)
+- `getpass.getpass()` works on all platforms (macOS, Linux, Windows)
+
+---
+
+## 9. Prayer Clock — Live Dashboard
+
+The `quran clock` command provides a live, auto-refreshing prayer dashboard.
+
+```python
+# Refreshes every second using Rich Live
+with Live(console=console, refresh_per_second=1, screen=True) as live:
+    while True:
+        live.update(_build_display(...))
+        time.sleep(1)
+```
+
+### Features
+- **No API calls during display** — prayer times are calculated once on startup
+- **Auto date rollover** — recalculates prayer times at midnight
+- **Pure offline** — uses the same local Adhan algorithm as `quran pray`
+- **Cross-platform** — works on macOS, Linux, and Windows Terminal
+
+---
+
+## 10. Data Files
 
 All data is stored in the user's home directory:
 
@@ -304,7 +359,7 @@ All data is stored in the user's home directory:
 
 ---
 
-## 9. What Is NOT Fake/Mock
+## 11. What Is NOT Fake/Mock
 
 | Component | Real data source |
 |---|---|
@@ -322,7 +377,7 @@ All data is stored in the user's home directory:
 
 ---
 
-## 10. No Mock Data Policy
+## 12. No Mock Data Policy
 
 Throughout the codebase, zero placeholder, dummy, or hardcoded fake data is used for functional features:
 

@@ -1,5 +1,5 @@
 # quran-cli Command Reference
-> Complete guide to every command, flag, and option. v1.2.7
+> Complete guide to every command, flag, and option. v1.3.0
 
 ---
 
@@ -31,10 +31,11 @@ Interactive arrow-key dashboard (same as bare `quran`).
 quran gui
 ```
 
-Menu options: Read Quran · Read with Translation · Search · Daily Prayer Schedule ·
-Ramadan Guide · Prayer Details · Eid Guide · Browse Hadith · Muslim World News ·
-Reading Streak · Bookmarks · Change Language · Notification Channels · AI Guide ·
-All Commands · Run Command · Update quran-cli
+Menu options: Read Quran · Browse Hadith · Read with Translation · Daily Prayer Schedule ·
+Prayer Clock · Fasting Times · Ramadan Guide · Prayer Details · Eid Guide · Search ·
+AI Guide · Muslim World News · Reading Streak · Bookmarks · Reminder Setup Wizard ·
+Prayer Times Setup · Change Language · Notification Channels · All Commands · Run Command ·
+Update quran-cli · Lock Screen · Lock Screen Setup
 
 ---
 
@@ -88,6 +89,47 @@ quran read 67 --lang ur             # Urdu (Jalandhry)
 ```
 
 **Language codes:** `en` · `bn` · `ar` · `ur` · `tr` · `fr` · `id` · `ru` · `de` · `es` · `zh` · `nl` · `ms`
+
+### Text Size (`--size`)
+
+```bash
+quran read 36 --size small          # compact: ref + text, no Arabic, no spacing
+quran read 36 --size medium         # default: Arabic + translation + spacing
+quran read 36 --size large          # panel-wrapped: bordered, padded, prominent
+quran read 1 --dual --size large    # Arabic + translation in panels
+```
+
+| Size | Arabic | Spacing | Layout |
+|---|---|---|---|
+| `small` | Hidden | None | `1:1 Translation text...` |
+| `medium` | Right-aligned | 1 line gap | Arabic + ref + text (default) |
+| `large` | In panel | Bordered | Panel with title, padding, and rule |
+
+### Reading Mode (`--mode`)
+
+```bash
+quran read 18 --mode full           # show all ayahs at once (default)
+quran read 18 --mode page           # 5 ayahs per page, Enter/n/p/q navigation
+quran read 18 --mode ayah           # one ayah at a time, Enter/n/p/s/q navigation
+quran read 36 --mode page --size large  # combine both features
+```
+
+| Mode | Behavior | Navigation |
+|---|---|---|
+| `full` | Entire surah at once | No navigation needed |
+| `page` | 5 ayahs per page | `Enter`/`n` next · `p` prev · page number · `q` quit |
+| `ayah` | One ayah at a time | `Enter`/`n` next · `p` prev · `s` bookmark · ayah number · `q` quit |
+
+### Interactive Mode
+
+```bash
+quran read                          # no args → interactive navigator
+```
+
+The interactive navigator (requires `simple-term-menu`) offers:
+- **Read Full Surah** · **Page-by-Page** · **Ayah-by-Ayah**
+- **Dual Mode** · **Dual Translation** · **Search**
+- Text size picker (small/medium/large) after surah & language selection
 
 ---
 
@@ -392,6 +434,68 @@ quran info languages                # list supported translation languages
 quran info hijri                    # today's Hijri date
 quran info location                 # show detected location
 ```
+
+---
+
+## quran clock
+
+Live full-screen prayer clock with seconds-level countdown and all 5 Waqt times.
+
+```bash
+quran clock                         # live clock — Ctrl+C to exit
+```
+
+**Display includes:**
+- Current time with seconds (updates every second)
+- Gregorian and Hijri date
+- Location (city, country)
+- 5 Waqt Namaz times with Arabic names
+- Next prayer countdown
+- Sehri/Iftar times during Ramadan
+- Calculation method footer
+
+Works on macOS, Linux, and Windows Terminal. Falls back gracefully on terminals without alternate screen support.
+
+---
+
+## quran lock
+
+Terminal screen lock with optional PIN protection. Shows a live Islamic lock screen with prayer times.
+
+```bash
+quran lock                          # lock screen immediately
+quran lock setup                    # set or change your PIN
+quran lock off                      # remove PIN and disable lock
+```
+
+**Without PIN:** Live lock screen, press Ctrl+C to exit.
+**With PIN:** Static lock screen, enter correct PIN to unlock.
+
+**Lock screen shows:**
+- Arabic Basmallah
+- Current time (HH:MM:SS)
+- Gregorian and Hijri date
+- Location
+- 5 Waqt Namaz times
+- Next prayer countdown
+- Sehri/Iftar during Ramadan
+
+**PIN security:** SHA-256 hashed, stored in `~/.config/quran-cli/config.toml`.
+
+---
+
+## quran fasting
+
+Daily fasting times (Sahur & Iftar) for any day. Highlights Sunnah fasting days.
+
+```bash
+quran fasting                       # today's sahur & iftar times
+quran fasting --week                # 7-day fasting schedule
+quran fasting --date 2026-04-01     # specific date
+```
+
+**Sunnah days highlighted:**
+`Monday` · `Thursday` · `White Days (13-15 Hijri)` · `Day of Arafah` · `Ashura` · `Shawwal`
 
 ---
 

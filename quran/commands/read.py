@@ -64,8 +64,22 @@ def read_cmd(
         help="Show Arabic text only")] = False,
     no_arabic:    Annotated[bool, typer.Option("--no-arabic",
         help="Show translation only, no Arabic")] = False,
+    size:         Annotated[str,  typer.Option("--size", "-s",
+        help="Text display size: small, medium, large")] = "medium",
+    mode:         Annotated[str,  typer.Option("--mode", "-m",
+        help="Reading mode: full (all at once), ayah (one-by-one), page (5 per page)")] = "full",
 ):
     if ctx.invoked_subcommand:
+        return
+
+    # Validate size/mode
+    size = size.lower()
+    mode = mode.lower()
+    if size not in ("small", "medium", "large"):
+        console.print(f"[red]✗[/red] Invalid size '{size}'. Use: small, medium, large")
+        return
+    if mode not in ("full", "ayah", "page"):
+        console.print(f"[red]✗[/red] Invalid mode '{mode}'. Use: full, ayah, page")
         return
 
     if ref is None:
@@ -129,8 +143,8 @@ def read_cmd(
         if not ayah.get("arabic") and not ayah.get("text"):
             _fetch_error(meta["name"], surah_n, lang)
             return
-        _render_ayah(ayah, surah_n, show_arabic=show_arabic,
-                     lang_label=lang, arabic_only=arabic_only)
+        _render_ayah_sized(ayah, surah_n, size=size, show_arabic=show_arabic,
+                          arabic_only=arabic_only)
         return
 
     from_a = ayah_from or 1
@@ -154,18 +168,12 @@ def read_cmd(
         l2_name = LANGUAGES.get(lang2, {}).get("native", lang2)
         console.print(f"  [dim]{l1_name}[/dim]  ·  [dim]{l2_name}[/dim]\n")
 
+        # Inject second-language text into ayahs for unified rendering
         for a in ayahs_p:
-            ref_s = f"[dim green]{surah_n}:{a['ayah']}[/dim green]"
-            t2    = s_map.get(a["ayah"], "")
-            console.print(f"  {ref_s}  [white]{a['text']}[/white]")
-            if t2:
-                console.print(f"        [dim]{t2}[/dim]")
-            console.print()
+            a["text2"] = s_map.get(a["ayah"], "")
 
-        console.print(
-            f"[dim]  ─── {meta['name']} · {len(ayahs_p)} ayahs · "
-            f"{lang} + {lang2} ───[/dim]\n"
-        )
+        _dispatch_mode(ayahs_p, surah_n, meta, mode, size, show_arabic=True,
+                       arabic_only=False, dual2_mode=True)
         _auto_streak(len(ayahs_p))
         return
 
@@ -180,14 +188,8 @@ def read_cmd(
             _fetch_error(meta["name"], surah_n, lang)
             return
 
-        for ayah in ayahs:
-            _render_ayah(ayah, surah_n, show_arabic=show_arabic,
-                         lang_label=lang, arabic_only=arabic_only)
-
-        console.print(
-            f"[dim]  ─── {meta['name']} · {len(ayahs)} ayahs · "
-            f"{'ar' if arabic_only else meta['type']} ───[/dim]\n"
-        )
+        _dispatch_mode(ayahs, surah_n, meta, mode, size, show_arabic=show_arabic,
+                       arabic_only=arabic_only)
         _auto_streak(len(ayahs))
         return
 
@@ -201,14 +203,8 @@ def read_cmd(
         _fetch_error(meta["name"], surah_n, lang)
         return
 
-    for ayah in ayahs:
-        ref_s = f"[dim green]{surah_n}:{ayah['ayah']}[/dim green]"
-        console.print(f"  {ref_s}  {ayah['text']}")
-        console.print()
-
-    console.print(
-        f"[dim]  ─── {meta['name']} · {len(ayahs)} ayahs · {meta['type']} ───[/dim]\n"
-    )
+    _dispatch_mode(ayahs, surah_n, meta, mode, size, show_arabic=show_arabic,
+                   arabic_only=arabic_only)
     _auto_streak(len(ayahs))
 
 
@@ -252,21 +248,244 @@ def _render_surah_header(meta: dict) -> None:
 
 def _render_ayah(ayah: dict, surah_n: int,
                  show_arabic: bool, lang_label: str, arabic_only: bool) -> None:
+    """Legacy renderer — delegates to sized version with medium."""
+    _render_ayah_sized(ayah, surah_n, size="medium", show_arabic=show_arabic,
+                       arabic_only=arabic_only)
+
+
+def _render_ayah_sized(ayah: dict, surah_n: int, *, size: str = "medium",
+                       show_arabic: bool = True, arabic_only: bool = False,
+                       dual2_mode: bool = False) -> None:
+    """Render a single ayah with size-aware formatting.
+
+    Sizes:
+      small  — compact: ref + text on one line, no Arabic, no spacing
+      medium — current default: Arabic right-aligned + translation + 1 blank line
+      large  — panel-wrapped: Arabic header, padded translation, horizontal rule
+    """
+    from rich.panel import Panel
     from quran.core.quran_engine import format_arabic
 
     ref_s = f"[dim green]{surah_n}:{ayah['ayah']}[/dim green]"
 
-    if show_arabic and ayah.get("arabic"):
-        ar_display = format_arabic(ayah["arabic"])
-        console.print(Align.right(
-            Text(ar_display, style="bold yellow", justify="right"),
-            width=console.width - 4
+    if size == "small":
+        # ── Small: compact single line ────────────────────────────────────
+        if arabic_only and ayah.get("arabic"):
+            ar = format_arabic(ayah["arabic"])
+            console.print(f"  {ref_s}  [yellow]{ar}[/yellow]")
+        elif ayah.get("text"):
+            console.print(f"  {ref_s}  [dim]{ayah['text']}[/dim]")
+        if dual2_mode and ayah.get("text2"):
+            console.print(f"         [dim italic]{ayah['text2']}[/dim italic]")
+
+    elif size == "large":
+        # ── Large: panel-wrapped with padding ─────────────────────────────
+        body_parts = []
+
+        if show_arabic and ayah.get("arabic") and not arabic_only:
+            ar_display = format_arabic(ayah["arabic"])
+            body_parts.append(f"[bold yellow]{ar_display}[/bold yellow]")
+            body_parts.append("")
+
+        if not arabic_only and ayah.get("text"):
+            body_parts.append(f"  {ayah['text']}")
+
+        if arabic_only and ayah.get("arabic"):
+            ar_display = format_arabic(ayah["arabic"])
+            body_parts.append(f"[bold yellow]{ar_display}[/bold yellow]")
+
+        if dual2_mode and ayah.get("text2"):
+            body_parts.append(f"  [dim]{ayah['text2']}[/dim]")
+
+        panel_text = "\n".join(body_parts) if body_parts else ""
+        console.print(Panel(
+            panel_text,
+            title=f"[green]{surah_n}:{ayah['ayah']}[/green]",
+            border_style="bright_black",
+            padding=(1, 3),
         ))
+        console.print()
 
-    if not arabic_only and ayah.get("text"):
-        console.print(f"  {ref_s}  {ayah['text']}")
+    else:
+        # ── Medium: current default behavior ──────────────────────────────
+        if show_arabic and ayah.get("arabic"):
+            ar_display = format_arabic(ayah["arabic"])
+            console.print(Align.right(
+                Text(ar_display, style="bold yellow", justify="right"),
+                width=console.width - 4
+            ))
 
-    console.print()
+        if not arabic_only and ayah.get("text"):
+            console.print(f"  {ref_s}  {ayah['text']}")
+
+        if dual2_mode and ayah.get("text2"):
+            console.print(f"        [dim]{ayah['text2']}[/dim]")
+
+        console.print()
+
+
+# ── Mode dispatcher ──────────────────────────────────────────────────────────
+
+PAGE_SIZE = 5
+
+
+def _dispatch_mode(ayahs: list, surah_n: int, meta: dict, mode: str, size: str,
+                   show_arabic: bool = True, arabic_only: bool = False,
+                   dual2_mode: bool = False) -> None:
+    """Route rendering to the appropriate mode: full, ayah, or page."""
+    if mode == "ayah":
+        _ayah_by_ayah_cli(ayahs, surah_n, meta, size, show_arabic=show_arabic,
+                          arabic_only=arabic_only, dual2_mode=dual2_mode)
+    elif mode == "page":
+        _paged_read(ayahs, surah_n, meta, size, show_arabic=show_arabic,
+                    arabic_only=arabic_only, dual2_mode=dual2_mode)
+    else:
+        # full — render all at once
+        for ayah in ayahs:
+            _render_ayah_sized(ayah, surah_n, size=size, show_arabic=show_arabic,
+                               arabic_only=arabic_only, dual2_mode=dual2_mode)
+        console.print(
+            f"[dim]  ─── {meta['name']} · {len(ayahs)} ayahs ───[/dim]\n"
+        )
+
+
+def _paged_read(ayahs: list, surah_n: int, meta: dict, size: str, *,
+                show_arabic: bool = True, arabic_only: bool = False,
+                dual2_mode: bool = False) -> None:
+    """Read ayahs in pages of PAGE_SIZE with navigation."""
+    total    = len(ayahs)
+    pages    = (total + PAGE_SIZE - 1) // PAGE_SIZE
+    cur_page = 0
+
+    while True:
+        start = cur_page * PAGE_SIZE
+        end   = min(start + PAGE_SIZE, total)
+        chunk = ayahs[start:end]
+
+        console.print()
+        console.print(Rule(
+            f"[dim]{meta['name']}  ·  Page {cur_page + 1} of {pages}  ·  "
+            f"Ayahs {start + 1}–{end} of {total}[/dim]",
+            style="bright_black"
+        ))
+        console.print()
+
+        for ayah in chunk:
+            _render_ayah_sized(ayah, surah_n, size=size, show_arabic=show_arabic,
+                               arabic_only=arabic_only, dual2_mode=dual2_mode)
+
+        # Navigation prompt
+        nav_parts = []
+        if cur_page < pages - 1:
+            nav_parts.append("[green]Enter[/green]/[green]n[/green] next")
+        if cur_page > 0:
+            nav_parts.append("[green]p[/green] prev")
+        nav_parts.append("[green]q[/green] quit")
+        prompt = "  [dim]" + "  ·  ".join(nav_parts) + "[/dim]"
+        console.print(prompt)
+        console.print("  > ", end="")
+
+        try:
+            key = input().strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            break
+
+        if key in ("q", "quit", "exit"):
+            break
+        elif key in ("p", "prev", "b", "back"):
+            if cur_page > 0:
+                cur_page -= 1
+        elif key in ("", "n", "next"):
+            if cur_page < pages - 1:
+                cur_page += 1
+            else:
+                break  # last page, Enter exits
+        else:
+            # Try interpreting as page number
+            try:
+                pg = int(key)
+                if 1 <= pg <= pages:
+                    cur_page = pg - 1
+            except ValueError:
+                pass
+
+    console.print(f"\n[dim]  ─── {meta['name']} · {total} ayahs ───[/dim]\n")
+
+
+def _ayah_by_ayah_cli(ayahs: list, surah_n: int, meta: dict, size: str, *,
+                      show_arabic: bool = True, arabic_only: bool = False,
+                      dual2_mode: bool = False) -> None:
+    """Read one ayah at a time with n/p/q navigation (CLI flag version)."""
+    total = len(ayahs)
+    idx   = 0
+
+    while True:
+        ayah = ayahs[idx]
+        console.print()
+        console.print(Rule(
+            f"[dim]{meta['name']}  ·  Ayah {idx + 1} of {total}[/dim]",
+            style="bright_black"
+        ))
+        console.print()
+        _render_ayah_sized(ayah, surah_n, size=size, show_arabic=show_arabic,
+                           arabic_only=arabic_only, dual2_mode=dual2_mode)
+
+        # Navigation
+        nav = []
+        if idx < total - 1:
+            nav.append("[green]Enter[/green]/[green]n[/green] next")
+        if idx > 0:
+            nav.append("[green]p[/green] prev")
+        nav.append("[green]s[/green] bookmark")
+        nav.append("[green]q[/green] quit")
+        console.print("  [dim]" + "  ·  ".join(nav) + "[/dim]")
+        console.print("  > ", end="")
+
+        try:
+            key = input().strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            break
+
+        if key in ("q", "quit"):
+            break
+        elif key in ("p", "prev"):
+            if idx > 0:
+                idx -= 1
+        elif key in ("s", "save"):
+            _save_bookmark_prompt(surah_n, ayah["ayah"])
+        elif key in ("", "n", "next"):
+            if idx < total - 1:
+                idx += 1
+            else:
+                break
+        else:
+            # Try jumping to ayah number
+            try:
+                target = int(key)
+                for i, a in enumerate(ayahs):
+                    if a["ayah"] == target:
+                        idx = i
+                        break
+            except ValueError:
+                pass
+
+    console.print(f"\n[dim]  ─── {meta['name']} · {total} ayahs ───[/dim]\n")
+
+
+def _save_bookmark_prompt(surah_n: int, ayah_num: int) -> None:
+    """Prompt to save a bookmark at the current position."""
+    from quran.core.bookmark_store import save_bookmark
+    console.print("\n  [dim]Enter bookmark label (e.g. 'morning_read'):[/dim]")
+    console.print("  > ", end="")
+    try:
+        label = input().strip()
+        if label:
+            save_bookmark(label, b_type="quran", surah=surah_n, ayah=ayah_num)
+            console.print(f"  [green]✓ Bookmark saved: '{label}'[/green]")
+    except (KeyboardInterrupt, EOFError):
+        pass
+
+
 
 def _interactive_read():
     """Interactive navigation for reading the Quran."""
@@ -285,9 +504,10 @@ def _interactive_read():
 
     # 1. Main Action Menu
     actions = [
-        "  Read Quran with Translation (Full Surah)",
-        "  Interactive Ayah-by-Ayah (n/p/s)",
-        "  Dual Mode (Arabic + Primary)",
+        "  Read Full Surah",
+        "  Read Page-by-Page (5 ayahs)",
+        "  Read Ayah-by-Ayah",
+        "  Dual Mode (Arabic + Translation)",
         "  Dual Translation (Two Languages)",
         "  Search Quran",
         "  Exit"
@@ -305,8 +525,22 @@ def _interactive_read():
     )
     idx = menu.show()
 
-    if idx is None or idx == 5:
+    if idx is None or idx == len(actions) - 1:
         console.print("  [dim]Cancelled.[/dim]\n")
+        return
+
+    # Search shortcut — doesn't need surah/lang/size pickers
+    if idx == 5:
+        console.print()
+        console.print("  [dim]Enter a search keyword:[/dim]")
+        console.print("  > ", end="")
+        try:
+            query = input().strip()
+        except (KeyboardInterrupt, EOFError):
+            return
+        if query:
+            import subprocess
+            subprocess.run(f'quran search "{query}"', shell=True)
         return
 
     # 2. Surah Selection
@@ -337,44 +571,49 @@ def _interactive_read():
         l_idx = l_menu.show()
         return lang_items[l_idx] if l_idx is not None else None
 
-    if idx == 0:  # Single Translation
+    # 4. Text Size Picker
+    def pick_size() -> str:
+        size_options = [
+            "  Small   — compact, no Arabic, minimal spacing",
+            "  Medium  — Arabic + translation (default)",
+            "  Large   — panel-wrapped, extra padding, prominent",
+        ]
+        s_menu = TerminalMenu(
+            size_options,
+            title="  Text size:",
+            menu_cursor_style=("fg_green", "bold"),
+            cursor_index=1,  # default to medium
+        )
+        s_idx = s_menu.show()
+        return ["small", "medium", "large"][s_idx] if s_idx is not None else "medium"
+
+    # Map action index → reading mode
+    mode_map = {0: "full", 1: "page", 2: "ayah", 3: "full", 4: "full"}
+    mode = mode_map.get(idx, "full")
+
+    if idx in (0, 1, 2):  # Single translation modes
         l1 = pick_lang("Select Translation Language")
         if not l1:
             return
-        _run_read_logic(surah_n, lang=l1)
+        sz = pick_size()
+        _run_read_logic(surah_n, lang=l1, size=sz, mode=mode)
 
-    elif idx == 1:  # Interactive Ayah-by-Ayah
+    elif idx == 3:  # Dual Mode (Arabic + L1)
         l1 = pick_lang("Select Translation Language")
         if not l1:
             return
-        _read_ayah_by_ayah_flow(surah_n, lang=l1)
+        sz = pick_size()
+        _run_read_logic(surah_n, lang=l1, dual=True, size=sz, mode=mode)
 
-    elif idx == 2:  # Dual Mode (Arabic + L1)
-        l1 = pick_lang("Select Translation Language")
-        if not l1:
-            return
-        _run_read_logic(surah_n, lang=l1, dual=True)
-
-    elif idx == 3:  # Dual Translation (L1 + L2)
+    elif idx == 4:  # Dual Translation (L1 + L2)
         l1 = pick_lang("Select First Language")
         if not l1:
             return
         l2 = pick_lang("Select Second Language")
         if not l2:
             return
-        _run_read_logic(surah_n, lang=l1, lang2_opt=l2, dual2=True)
-
-    elif idx == 4:  # Search — BUG FIX: use subprocess, not direct function call
-        console.print()
-        console.print("  [dim]Enter a search keyword:[/dim]")
-        console.print("  > ", end="")
-        try:
-            query = input().strip()
-        except (KeyboardInterrupt, EOFError):
-            return
-        if query:
-            import subprocess
-            subprocess.run(f'quran search "{query}"', shell=True)
+        sz = pick_size()
+        _run_read_logic(surah_n, lang=l1, lang2_opt=l2, dual2=True, size=sz, mode=mode)
 
 
 def _read_ayah_by_ayah_flow(surah_n: int, lang: str):
@@ -469,7 +708,8 @@ def _read_ayah_by_ayah_flow(surah_n: int, lang: str):
 
 def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
                    dual: bool = False, dual2: bool = False,
-                   arabic_only: bool = False, no_arabic: bool = False):
+                   arabic_only: bool = False, no_arabic: bool = False,
+                   size: str = "medium", mode: str = "full"):
     """Internal logic extracted from read_cmd for use by _interactive_read."""
     from quran.config.settings import load
     from quran.core.quran_engine import (
@@ -505,12 +745,9 @@ def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
             return
         s_map = {a["ayah"]: a["text"] for a in ayahs_s}
         for a in ayahs_p:
-            ref_s = f"[dim green]{surah_n}:{a['ayah']}[/dim green]"
-            t2    = s_map.get(a["ayah"], "")
-            console.print(f"  {ref_s}  [white]{a['text']}[/white]")
-            if t2:
-                console.print(f"        [dim]{t2}[/dim]")
-            console.print()
+            a["text2"] = s_map.get(a["ayah"], "")
+        _dispatch_mode(ayahs_p, surah_n, meta, mode, size, show_arabic=True,
+                       arabic_only=False, dual2_mode=True)
         return
 
     if use_dual:
@@ -519,9 +756,8 @@ def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
         if not ayahs:
             _fetch_error(meta["name"], surah_n, lang)
             return
-        for ayah in ayahs:
-            _render_ayah(ayah, surah_n, show_arabic=show_arabic,
-                         lang_label=lang, arabic_only=arabic_only)
+        _dispatch_mode(ayahs, surah_n, meta, mode, size, show_arabic=show_arabic,
+                       arabic_only=arabic_only)
         return
 
     with console.status(f"[dim]Fetching {meta['name']} ({lang})…[/dim]"):
@@ -529,7 +765,6 @@ def _run_read_logic(surah_n: int, lang: str = "", lang2_opt: str = "",
     if not ayahs:
         _fetch_error(meta["name"], surah_n, lang)
         return
-    for ayah in ayahs:
-        ref_s = f"[dim green]{surah_n}:{ayah['ayah']}[/dim green]"
-        console.print(f"  {ref_s}  {ayah['text']}")
-        console.print()
+    _dispatch_mode(ayahs, surah_n, meta, mode, size, show_arabic=show_arabic,
+                   arabic_only=arabic_only)
+
