@@ -211,10 +211,10 @@ def _read_submenu(TerminalMenu):
     console.print()
 
     options = [
-        "  Browse Surahs (1–114)        [dim](Full Surah)[/dim]",
-        "  Read Ayah-by-Ayah          [dim](Interactive)[/dim]",
+        "  Browse Surahs (1–114)      (Full Surah)",
+        "  Read Ayah-by-Ayah          (Interactive)",
         "  Read by Ayah Reference",
-        "  Advanced Reader Wizard     [dim](Size, Dual, Mode)[/dim]",
+        "  Advanced Reader Wizard     (Size, Dual, Mode)",
         "  Return to Menu",
     ]
 
@@ -274,9 +274,30 @@ def _surah_browser(TerminalMenu, mode="full"):
             return
 
         surah_num = SURAH_META[idx][0]
-        
+
         if mode == "ayah":
-            _run(f"quran read {surah_num} --mode ayah")
+            style_options = [
+                "  Arabic + Translation (Dual)",
+                "  Translation Only",
+                "  Arabic Only"
+            ]
+            style_menu = TerminalMenu(
+                style_options,
+                title="  Choose Display Style:",
+                menu_cursor="> ",
+                menu_cursor_style=("fg_cyan", "bold")
+            )
+            style_idx = style_menu.show()
+            
+            if style_idx is None:
+                return
+                
+            if style_idx == 0:
+                _run(f"quran read {surah_num} --mode ayah --dual")
+            elif style_idx == 1:
+                _run(f"quran read {surah_num} --mode ayah --no-arabic")
+            else:
+                _run(f"quran read {surah_num} --mode ayah --arabic-only")
         else:
             _read_with_navigation(surah_num, TerminalMenu)
 
