@@ -30,6 +30,9 @@ def news_cmd(
 
     try:
         import feedparser
+        import ssl
+        if hasattr(ssl, '_create_unverified_context'):
+            ssl._create_default_https_context = ssl._create_unverified_context
     except ImportError:
         console.print("[red]✗[/red] feedparser not installed: pip install feedparser")
         return
@@ -44,25 +47,36 @@ def news_cmd(
 
     entries = feed.entries[:limit]
     if not entries:
-        console.print("[dim]No articles found. Check your connection.[/dim]")
+        console.print("[dim]No articles found. Check your connection or feed URL.[/dim]")
         return
 
+    from rich.panel import Panel
+    from rich.text import Text
+
     console.print()
-    console.print(Rule(f"[dim]{source}[/dim]", style="bright_black"))
+    console.print(Rule(f"[bold green]Muslim World News — {source.capitalize()}[/bold green]", style="green"))
     console.print()
 
     for i, e in enumerate(entries, 1):
         title   = getattr(e, "title", "No title")
-        summary = getattr(e, "summary", "")[:160].strip()
+        # Clean HTML completely for better terminal UI
+        import re
+        raw_summary = getattr(e, "summary", "")
+        summary = re.sub('<[^<]+?>', '', raw_summary)[:200].strip()
         link    = getattr(e, "link", "")
         published = getattr(e, "published", "")[:16] if hasattr(e, "published") else ""
 
-        console.print(f"  [green]{i:>2}[/green]  [bold white]{title}[/bold white]")
+        title_text = Text(f"{i:>2}. {title}", style="bold white")
+        
+        body_text = Text()
         if summary:
-            console.print(f"      [dim]{summary}…[/dim]")
+            body_text.append(f"{summary}…\n", style="dim")
         if published:
-            console.print(f"      [dim]{published}[/dim]")
-        console.print()
+            body_text.append(f"\n{published}  ", style="cyan")
+        if link:
+            body_text.append(f"🔗 {link}", style="blue underline")
+
+        console.print(Panel(body_text, title=title_text, title_align="left", border_style="bright_black"))
 
     console.print(f"  [dim]Sources: {' · '.join(FEEDS.keys())}[/dim]")
     console.print(f"  [dim]quran news --source seekers --limit 5[/dim]\n")
